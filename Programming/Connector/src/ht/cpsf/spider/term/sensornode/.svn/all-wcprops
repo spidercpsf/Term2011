@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/spiderterm2011~subversion/!svn/ver/15/SensorNode/src/ht/cpsf/spider/term/sensornode
+END
+SunSpotApplication.java
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/spiderterm2011~subversion/!svn/ver/41/SensorNode/src/ht/cpsf/spider/term/sensornode/SunSpotApplication.java
+END
+crc8.java
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/spiderterm2011~subversion/!svn/ver/35/SensorNode/src/ht/cpsf/spider/term/sensornode/crc8.java
+END
+bitListenner.java
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/spiderterm2011~subversion/!svn/ver/41/SensorNode/src/ht/cpsf/spider/term/sensornode/bitListenner.java
+END
+sendData.java
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/spiderterm2011~subversion/!svn/ver/39/SensorNode/src/ht/cpsf/spider/term/sensornode/sendData.java
+END
+signalListener.java
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/spiderterm2011~subversion/!svn/ver/13/SensorNode/src/ht/cpsf/spider/term/sensornode/signalListener.java
+END
+bitDetect.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/spiderterm2011~subversion/!svn/ver/37/SensorNode/src/ht/cpsf/spider/term/sensornode/bitDetect.java
+END
+defineThreshold.java
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/spiderterm2011~subversion/!svn/ver/41/SensorNode/src/ht/cpsf/spider/term/sensornode/defineThreshold.java
+END
+smoothSignal.java
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/spiderterm2011~subversion/!svn/ver/13/SensorNode/src/ht/cpsf/spider/term/sensornode/smoothSignal.java
+END
+threadListenLight.java
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/spiderterm2011~subversion/!svn/ver/41/SensorNode/src/ht/cpsf/spider/term/sensornode/threadListenLight.java
+END

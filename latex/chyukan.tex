@@ -1,0 +1,144 @@
+% !TEX encoding = JISJapanese
+\documentclass[a4j,twocolumn]{jarticle}
+\usepackage{graphicx}
+\makeatletter
+\def\section{\@startsection{section}{1}{\z@}{2ex plus .2ex minus .2ex}%
+			{.5ex plus .2ex minus .2ex}{\large\bfseries}}
+\def\thesection{\arabic{section}.}
+\def\subsection{\@startsection{subsection}{1}{\z@}{.7ex plus .2ex minus .2ex}%
+			{.5ex plus .2ex minus .2ex}{\normalsize\bfseries}}
+\def\thesubsection{\arabic{section}.\arabic{subsection}}
+\def\thefootnote{\fnsymbol{footnote}}
+\makeatother			
+
+
+\def\baselinestretch{0.8}
+
+\setlength{\textheight}{23.5cm}%297-30-27 - 5
+\setlength{\textwidth}{17.4cm}%210-18-18 - 10
+%\setlength{\headheight}{0.0in}
+\setlength{\headsep}{0.0in}
+\setlength{\oddsidemargin}{-.9cm}%+3
+\setlength{\evensidemargin}{-.9cm}%+3
+\setlength{\columnsep}{7mm}
+% local settings
+% end of local settings
+\begin{document}
+\pagestyle{empty}
+\thispagestyle{empty}
+
+\twocolumn[%
+\begin{center}
+ {\Large Termプロジェック：\\LCDSN:光通信を用いた，セキュアなWSNを構築する手法}\vspace{.5ex}
+
+ {\Large\sffamily }\vspace{1ex}
+
+
+
+\large
+\mbox{}
+\hfil
+\setcounter{footnote}{2}
+{\bfseries spider}${}^\thefootnote$
+\hfil
+\setcounter{footnote}{3}
+{\bfseries 親：tacky}${}^\thefootnote$
+\hfil
+\mbox{}
+
+\end{center}
+]
+
+\setcounter{footnote}{2}
+\footnotetext{慶應大学環境情報学部3年}
+\setcounter{footnote}{3}
+\footnotetext{慶應大学修士１年}
+
+
+
+
+\section{背景と問題意識}
+現在，Wireless Sensor Networkが普及し，複数の機能のセンサノードで様々なアプリケーションを設置させつつある．例えば，離れて暮らす老人の安否確認を行うアプリケーションや，留守にしている自宅の警備アプリケーションなどが挙げられる．その際，設置されるWSNにはセキュリティが必要である．\\
+\indent 他に複数のWSNを区別して設置のために，使う前に，知識や経験で設置が必要になる．\\
+\indent また，本研究では近い将来センサノードの設置を，WSNに関する知識や経験のないユーザが行うようになると想定している．そのため，エンドユーザが操作可能な手法でセキュアなWSNを構築可能な手法が必要であると言える．
+\section{シナリオ}
+\indent WSNを用いて様々なアプリケーションが設置され，利用されつつある．例えば，泥棒の侵入を検知して，通知するシステムとか，健康情報を医者に送信して，リアルタイムに診察するシステムとかがあある．\\
+\indent 近い将来，WSNを用いたアプリケーションを家のサーバにインストールし，必要なセンサノードをユーザが購入し設置するようになると想定している．\\
+\indent そうした未来において，セキュアなセンサネットワークをエンドユーザが手軽に構築可能な手法が必要となる．本システムが提案する手法を用いることで，エンドユーザは家庭に様々なアプリケーションを設置可能となる．\\
+\section{目的}
+本研究の目的はエンドユーザが操作可能な手法を用いてセキュアなWSNを構築する手法を提案することである．または複数の機能が異なるセンサノード間でも追加できる．
+\section{機能要件}
+本研究を実現するための要件を３つ述べる．まず，簡単なインタラクションでWSNの構築を可能にすることである．また，異なる機能のセンサノード間でもデータをやり取りできること．最後，その際に構築するWSNがセキュアな通信を行うことが可能であることが挙げられる．
+\section{アプローチ}
+\indent
+簡単なインタラクションでWSNの構築を可能のため，近接したデバイス間でのデータ通信では，LEDの点滅パターンを用いてデータの送受信を行う．\\
+\indent そして，ノードの機能によって，違い仕方を用いる．\\
+\indent また，WSNでセキュアな通信を行うために，センサノードのペアリング毎に異なる鍵を生成し，データの暗号化を行う．本研究では，ノードIDとMasterKeyでハッシュファンクション(\ref{eqn:hashFun})を用いて一意な鍵を生成する．
+\subsection{データ通信}
+\indent 最小の時間の単位を t で表す(例えば:t=12ms).\\
+\indent 送信するデータのビット毎に点滅のパターンと継続時間を変化させてデータを表現する．\\
+\indent 0は弱い光で2tの間光り，t時間消灯する．また，1は強い光でtの間光り，2t時間消灯する．\\
+\indent データを送信のため，「START,FINISH,OK,FALSE」の特別の合図を作成した．\\
+\begin{itemize}
+\item 通信	：START(6t,t,3t,t),FINISH(3t,t,6t,t)
+\item チェック：OK(3t,t,3t,t),FALSE(6t,t,6t,t)
+\end{itemize}
+STARTは強い光は６t，休憩t，また強い光は３t，最後は休憩tを設定します．他の合図は同じに設定する．\\
+\indent 送信された光信号の平滑化のためにGaussian Smoothing アルゴリズムを用いる.\subsubsection{実装の結果}
+\indent 実際で光パータンの通信は以下の感じになった．
+\begin{center}
+\includegraphics[scale=0.35]{result.eps}
+\end{center}
+\subsection{ノードを追加ステップ}
+\indent ノードの機能によって，仕方が違う．
+\begin{itemize}
+\item LEDだけがある場合はノードで繰り返す自分のIDと仮の鍵を送る，ホストからリクエストを待つ．後に仮の鍵で暗号化して，MasterKeyとホストIDを通信する．
+\item 照度センサだけがある場合は，コネクタで繰り返すホストのIDとネットワークのMasterKeyを送る，ホストでノードのリクエストも持つ．後にMasterKeyで暗号化し，通信でノードのIDを確認する．
+\item LEDと照度センサがある，ノードのIDとホストのIDとネットワークのMasterKeyを送信．
+\end{itemize}
+\subsection{セキュアな設定}
+\subsubsection{鍵はどうする？}
+\indent コネクタは追加したいノードにbasestationのIDとネットワークのMasterKeyを送って，追加したいノードでIDを送る．この情報で鍵を計算する．
+\begin{eqnarray}
+\label{eqn:hashFun}
+key=Hash(M | ID_1 | ID_2|)
+\end{eqnarray}
+\section{システム構成図}
+\subsection{システム構成図}
+\begin{center}
+\includegraphics[scale=0.28]{system.eps}
+\end{center}
+\section{評価}
+\subsection{データ通信の評価}
+\indent 128ビット送信する実験を69回行った所，25bit/sec程の速度を示した．また，69回の送信で得られたデータの送信精度は85.5％であった．また，ビットの誤佐渡は０と１を９２８回の送信で０の精度は１００％，１の精度は９９％であった．
+\subsection{システムの評価}
+\indent WSNの知識と軽減がない人の実験でかかる時間とユーザのアンケートで評価する\\
+\section{まとめと考察}
+\indent 照度センサとLEDを用いて，センサノードとコネクタがデータ通信が可能にする．この手法で簡単なインタラクションでセキュアなWSNが構築が出来た．\\
+\indent また，データ通信の速度はまだ低い，小さいデータだけが効果である．
+\indent フューチャーワークはデータ通信の精度があがって，長いデータを送るときに失敗すると，後ろが全部ずれちゃうのを解決する．また，複数種類のセンサノードで実装すると思う．
+\begin{thebibliography}{2}
+\bibitem{synctap}
+Jun Rekimoto, "SyncTap: synchronous user operation for spontaneous network connection", Personal and Ubiquitous Computing, 2004. 
+\bibitem{spotsnap}
+Takuro Yonezawa, "Spot\&Snap: An Interaction for Associating Sensor Nodes and Everyday Objects to Realize DIY Smart Object Services", IPSJ Transactions on Database 48.
+\bibitem{vibconnect}
+Takuro Yonezawa, "Vib-Connect: A Device Collaboration Interface Using  Vibration", RTCSA, 2011.
+\bibitem{ultrasonic}
+Will Archer Arentz, "Near Ultrasonic Directional Data Transfer for Modern Smartphones", UbiComp, 2011.
+\bibitem{security1}
+Marcos A. Simpli'cio Jr, "A survey on key management mechanisms for distributed Wireless sensor networks", Computer Networks Volume 54.
+\bibitem{security2}
+Roberto Di Pietro, "Random key-assignment for secure Wireless Sensor Networks",  SASN '03.
+\bibitem{lightcommucation}
+Toshihiko Komine, "Fundamental Analysis for Visible-Light Communication System using LED Lights", IEEE Consumer Electronics Society, Feb 2004.
+\bibitem{web1}
+http://www.sunspotworld.com
+\end{thebibliography}
+%\begin{figure}[bt]
+% \center
+% \includegra s[width=.8\linewidth]{foo.eps}
+% \caption{A sample of including a figure}
+% \label{fig:sample}
+%\end{figure}
+\end{document}

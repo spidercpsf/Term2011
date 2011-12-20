@@ -93,7 +93,7 @@ public class bitListenner implements signalListener{
         else {
 
             if(isStart) {
-                System.out.print(b);
+                //System.out.print(b);
                 //output+=b;
                 if(countData>=0&&countData/8<maxLen){
                     if(countData%8==0){

@@ -100,7 +100,7 @@ public class bitDetect {
                         if(max<threshold01_0){
                             
                             if(count1<thresholdLen01-3){
-                                System.out.print("&");
+                                //System.out.print("&");
                                 //if('1'!= test.charAt(id)) System.out.println("False1:");
                                 listener.newBit('1');
                             }else{
@@ -112,7 +112,7 @@ public class bitDetect {
                             
                             //if('1'!= test.charAt(id)) System.out.println("False3:");
                             if(count1>thresholdLen01+2){
-                                System.out.print("&");
+                                //System.out.print("&");
                                 //if('1'!= test.charAt(id)) System.out.println("False1:");
                                 listener.newBit('0');
                                 preBit=0;
@@ -121,7 +121,7 @@ public class bitDetect {
                                 preBit=1;
                             }
                         }else{// not sure -> using leng of signal
-                            System.out.print("!");
+                            //System.out.print("!");
                             if(count1>=thresholdLen01){
                                 //if('0'!= test.charAt(id)) System.out.println("False4:");
                                 listener.newBit('0');

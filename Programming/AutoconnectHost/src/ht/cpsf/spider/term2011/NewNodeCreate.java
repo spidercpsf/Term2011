@@ -74,7 +74,7 @@ public class NewNodeCreate implements Runnable{
                     }
                     int val = dg.readByte();         // read the sensor value
                     System.out.println("from: " + addr + "   value = " + val);
-                    if(!dg.getAddress().equals("0014.4F01.0000.6A27")){//0014.4F01.0000.4BA1")){
+                    if(!dg.getAddress().equals("0014.4F01.0000.4BA1")){
                         System.out.println("    Check FALSE");
                         continue;
                     }

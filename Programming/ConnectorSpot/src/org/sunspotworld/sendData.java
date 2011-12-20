@@ -25,11 +25,20 @@ public class sendData  implements defineThreshold, Runnable{
     boolean issenOK=false;
     boolean issenFALSE=false;
     Thread runThread;
+    boolean stopFlag;
+
+    public boolean checkFin(){
+        if(q.isEmpty()&&tmpQ.isEmpty()) return true;
+        return false;
+    }
     public void start(){
         runThread = new Thread(this);
         runThread.start();
+        stopFlag=false;
     }
-
+    public void stop(){
+        stopFlag=true;
+    }
     public sendData(){
         leds = (ITriColorLEDArray) Resources.lookup(ITriColorLEDArray.class);
         led7= leds.getLED(7);
@@ -37,7 +46,7 @@ public class sendData  implements defineThreshold, Runnable{
     }
     public void run() {
         byte[] data;
-        while(true){
+        while(!stopFlag){
             //System.out.println("Wait 1s");
             Utils.sleep(2000);//2s is time out
             if(tmpQ.isEmpty()&&!q.isEmpty()){
@@ -50,10 +59,11 @@ public class sendData  implements defineThreshold, Runnable{
                 for(int i=0;i<data.length;i++) System.out.print(data[i]+" ");
                 System.out.println();
                 send(data);
-                
+
 
             }
         }
+        System.out.println("End sendata Thread");
     }
     /**
      * Add new data to send , default data[0] is checksum -> warning
@@ -123,6 +133,15 @@ public class sendData  implements defineThreshold, Runnable{
         led7.setOn();
         Utils.sleep(15*3);
         led7.setOff();
+        Utils.sleep(60);
+        //start lights
+        led7.setOn();
+        Utils.sleep(15*6);
+        led7.setOff();
+        Utils.sleep(20);
+        led7.setOn();
+        Utils.sleep(15*3);
+        led7.setOff();
         Utils.sleep(20);
         //send data
 
@@ -171,6 +190,15 @@ public class sendData  implements defineThreshold, Runnable{
         led7.setRGB(255, 250, 250);
         led7.setOn();
         Utils.sleep(15*6);
+        led7.setOff();
+        Utils.sleep(20);
+        led7.setOn();
+        Utils.sleep(15*3);
+        led7.setOff();
+        Utils.sleep(30);
+        //start lights
+        led7.setOn();
+        Utils.sleep(15*8);
         led7.setOff();
         Utils.sleep(20);
         led7.setOn();

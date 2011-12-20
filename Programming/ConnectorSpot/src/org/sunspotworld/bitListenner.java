@@ -91,8 +91,9 @@ public class bitListenner implements signalListener{
             System.out.println("FALSE ACK");
         }
         else {
+
             if(isStart) {
-                //System.out.print(b);
+                System.out.print(b);
                 //output+=b;
                 if(countData>=0&&countData/8<maxLen){
                     if(countData%8==0){
@@ -117,7 +118,7 @@ public class bitListenner implements signalListener{
             case (byte) 171:
                 System.out.println("LED only node");
                 for(addrN=0,i=0;i<4;i++){
-                    addrN=addrN*256 + (char)data[i+2];
+                    addrN=addrN*256 + (data[i+2]<0?256+data[i+2]:data[i+2]);
                 }
                 addrN+=IEEEAddress.toLong("0014.4F01.0000.0000");
                 System.out.println("Rcv from "+ IEEEAddress.toDottedHex(addrN));

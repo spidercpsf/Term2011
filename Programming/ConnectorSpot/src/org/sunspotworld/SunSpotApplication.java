@@ -50,7 +50,6 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
         sD.start();
             try {
                 System.out.println("This is connector");
-
                 HC = new HostConnect(14);
                 HC.dg.writeLong(0);//set to broadcast
                 HC.writeByte((byte)14);//send hello msg

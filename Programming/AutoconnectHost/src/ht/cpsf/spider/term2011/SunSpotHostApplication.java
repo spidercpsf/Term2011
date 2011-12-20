@@ -26,11 +26,12 @@ public class SunSpotHostApplication {
     private GUIFrame gF= new GUIFrame("Node Info");
     //public static statusFrame sF;
     static nodeManager nM= new nodeManager(20,10);
+    static long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
     /**
      * Print out our radio address.
      */
     public void run() throws IOException {
-        long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
+        
         //DatagramConnection conCnt=(DatagramConnection)Connector.open("radiogram://:1412");//connector
         //DatagramConnection sensorData=(DatagramConnection)Connector.open("radiogram://:1412");//recv from sensor node
         //open conect (listener)

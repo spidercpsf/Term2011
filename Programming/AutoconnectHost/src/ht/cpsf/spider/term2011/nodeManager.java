@@ -73,6 +73,7 @@ public class nodeManager {
         int i;
         for(i=0;i<listNode.size();i++) if(listNode.get(i).ID.equals(ID)){
             listNode.get(i).update(data);
+
             return 0;
         }
         System.out.println("Cant find "+ID);

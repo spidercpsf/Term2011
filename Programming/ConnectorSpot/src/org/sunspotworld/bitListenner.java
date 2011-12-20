@@ -5,6 +5,8 @@
 
 package org.sunspotworld;
 
+import com.sun.spot.resources.transducers.LEDColor;
+import com.sun.spot.util.IEEEAddress;
 import java.io.IOException;
 import java.util.Date;
 /**
@@ -104,7 +106,47 @@ public class bitListenner implements signalListener{
         }
     }
     private void doWithData(byte[] data) throws IOException{
+        long addrN;
+        byte i;
+        byte[] code= new byte[8];
         switch(data[1]){
+            /**
+             * this case Node only have LED -> recv Node ID, random key of node
+             * after that using random key to create crypt msg to send to node by node ID
+             */
+            case (byte) 171:
+                System.out.println("LED only node");
+                for(addrN=0,i=0;i<4;i++){
+                    addrN=addrN*256 + (char)data[i+2];
+                }
+                addrN+=IEEEAddress.toLong("0014.4F01.0000.0000");
+                System.out.println("Rcv from "+ IEEEAddress.toDottedHex(addrN));
+                for(i=0;i<8;i++) {
+                    SunSpotApplication.leds.getLED(i).setColor(LEDColor.RED);
+                    SunSpotApplication.leds.getLED(i).setOn();
+                }
+                {//send data to NODE (loop send ultil recv OK ACK)
+                    SunSpotApplication.HC.dg.reset();
+                    SunSpotApplication.HC.dg.writeLong(addrN);//write addr of destimation
+                    SunSpotApplication.HC.dg.writeByte((byte)171);//code of node
+                    //write data for init secure in node
+                    SunSpotApplication.HC.dg.writeLong(SunSpotApplication.hostAddr);//code of node
+                    //
+                    SunSpotApplication.HC.send();
+                }
+                {//send data to HOST
+                    SunSpotApplication.HC.dg.reset();
+                    SunSpotApplication.HC.dg.writeLong(SunSpotApplication.hostAddr);
+                    SunSpotApplication.HC.dg.writeByte((byte)161);
+                    //write data for create connect
+                    SunSpotApplication.HC.dg.writeLong(addrN);
+                    //
+                    SunSpotApplication.HC.send();
+                }
+                for(i=0;i<8;i++) {
+                    SunSpotApplication.leds.getLED(i).setOff();
+                }
+                break;
             case (byte)170:
                 SunSpotApplication.HC.reset();
                 SunSpotApplication.HC.writeByteArr(data, 1, 13);

@@ -23,4 +23,10 @@ public class EnDeCode {
     public static byte[] encode(byte[] data){
         return data;
     }
+    public static byte[] encode(byte[] key,long ID,byte[] data){
+        return data;
+    }
+    public static byte[] decode(byte[] key,long ID,byte[] data){
+        return data;
+    }
 }

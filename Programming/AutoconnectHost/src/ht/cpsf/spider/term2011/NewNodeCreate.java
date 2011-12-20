@@ -38,11 +38,11 @@ public class NewNodeCreate implements Runnable{
     public void run() {
         RadiogramConnection rCon = null;
         Datagram dg = null;
-
         RadiogramConnection rConOut = null;
         Datagram dgOut = null;
         int addrA;
         long addrFull;
+        long recvAddr;
         byte[] randomCode=new byte[8];
         try {
             // Open up a server-side broadcast radiogram connection
@@ -67,30 +67,36 @@ public class NewNodeCreate implements Runnable{
                     rCon.receive(dg);
                     String addr = dg.getAddress();  // read sender's Id
                     //long time = dg.readLong();      // read time of the reading
+                    recvAddr= dg.readLong();
+                    if(recvAddr!=0 && recvAddr!= SunSpotHostApplication.ourAddr ){
+                        System.out.println("MSG for "+ IEEEAddress.toDottedHex(recvAddr));
+                        continue;
+                    }
                     int val = dg.readByte();         // read the sensor value
-
                     System.out.println("from: " + addr + "   value = " + val);
-                    if(!dg.getAddress().equals("0014.4F01.0000.4BA1")){
+                    if(!dg.getAddress().equals("0014.4F01.0000.6A27")){//0014.4F01.0000.4BA1")){
                         System.out.println("    Check FALSE");
                         continue;
                     }
                     switch (val){
                         case (byte)14:
-
                             System.out.println("Hello messenger from connector");
                             if(!connectorAddr.equals(addr)){
                                 connectorAddr=addr;
                                 rConOut = (RadiogramConnection) Connector.open("radiogram://"+addr+":" + HOST_PORT);
                                 dgOut = rConOut.newDatagram(50);  // only sending 12 bytes of data
+
                             }
                             //
                             System.out.println("Sendding Hellomsg to Connector..");
                             dgOut.reset();
+                            dgOut.writeLong(IEEEAddress.toLong(addr));
                             dgOut.writeByte((byte)80);
                             rConOut.send(dgOut);
                             //
                             break;
-                        case (byte)171:// -> tempory code to connect to node (node havent light sensor,only LED)
+                        case (byte)161:// -> tempory code to connect to node (node havent light sensor,only LED)
+                            System.out.println("Code=161:to connect to node (node havent light sensor,only LED)");
                             if(!connectorAddr.equals(addr)){
                                 connectorAddr=addr;
                                 rConOut = (RadiogramConnection) Connector.open("radiogram://"+addr+":" + HOST_PORT);
@@ -98,16 +104,15 @@ public class NewNodeCreate implements Runnable{
                             }
                             //
                             dgOut.reset();
+                            dgOut.writeLong(IEEEAddress.toLong(addr));
                             dgOut.writeByte((byte)80);
                             rConOut.send(dgOut);
-                            //
-                            addrA=dg.readInt();
-                            for(int i=0;i<8;i++) randomCode[i]=dg.readByte();
-                            addrFull=IEEEAddress.toLong("0014.4F01.0000.0000")+addrA;
+                            //read data from MSG
+                            addrFull=dg.readLong();//read ADDR of new Node
                             //add to list node
-                            //SunSpotHostApplication.NM.addNode(IEEEAddress.toDottedHex(addrB),randomCode);
+                            SunSpotHostApplication.nM.addNode(IEEEAddress.toDottedHex(addrFull),"");
                             break;
-                        case (byte)170:// -> node have LED and light sensor -> direct sent host and node info
+                        case (byte)160:// -> node have LED and light sensor -> direct sent host and node info
                             if(!connectorAddr.equals(addr)){
                                 connectorAddr=addr;
                                 rConOut = (RadiogramConnection) Connector.open("radiogram://"+addr+":" + HOST_PORT);
@@ -115,6 +120,7 @@ public class NewNodeCreate implements Runnable{
                             }
                             //
                             dgOut.reset();
+                            dgOut.writeLong(IEEEAddress.toLong(addr));
                             dgOut.writeByte((byte)80);
                             rConOut.send(dgOut);
                             //

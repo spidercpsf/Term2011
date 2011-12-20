@@ -13,6 +13,7 @@ import com.sun.spot.resources.transducers.ISwitch;
 import com.sun.spot.resources.transducers.ITriColorLED;
 import com.sun.spot.resources.transducers.ITriColorLEDArray;
 import com.sun.spot.sensorboard.EDemoBoard;
+import com.sun.spot.sensorboard.peripheral.TemperatureInput;
 import com.sun.spot.service.BootloaderListenerService;
 import com.sun.spot.util.IEEEAddress;
 import com.sun.spot.util.Utils;
@@ -37,35 +38,31 @@ import javax.microedition.midlet.MIDletStateChangeException;
 public  class SunSpotApplication extends MIDlet implements defineThreshold{
     public static sendData sD= new sendData();
     public static HostConnect HC=null;
-    
+    public static RadioListenner RL= null;
+    static long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
+    static byte randomCode[]= new byte[8];
+    //data for radio commucation
+    static long hostAddr;
+    //
     ITriColorLEDArray   leds = (ITriColorLEDArray) Resources.lookup(ITriColorLEDArray.class);
+    TemperatureInput temp = (TemperatureInput) Resources.lookup(TemperatureInput.class);
     ITriColorLED    led3= leds.getLED(3);
     protected void startApp() throws MIDletStateChangeException {
         System.out.println("Node started");
         BootloaderListenerService.getInstance().start();   // monitor the USB (if connected) and recognize commands from host
-        long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
+        
         int shortAddr= (int) (ourAddr);
         String sendAddr= Integer.toBinaryString(shortAddr);
-        System.out.println("Our radio address = " + IEEEAddress.toDottedHex(shortAddr)+" "+shortAddr);
+        System.out.println("Node radio address = " + IEEEAddress.toDottedHex(shortAddr)+" "+shortAddr);
         sD.start();
-        if(shortAddr==19361){
-            try {
-                System.out.println("This is connector");
-                HC = new HostConnect("C0A8.0B11.0000.DCC8", 14);
-                HC.writeInt(1412);
-                HC.send();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }else{
+        RL = new RadioListenner(14);
+        RL.start();
+        HC= new HostConnect("", 14);
             System.out.println("This is sensor-node");
-            //sD.add(new byte[]{0,85});//hello packet
-            //sD.add(new byte[]{0,(byte)170,(byte)((shortAddr>>24)%256),(byte)((shortAddr>>16)%256),(byte)((shortAddr>>8)%256),(byte)((shortAddr)%256)});//send addr
             Random rd= new Random(new Date().getTime());
             byte data[]=new byte[14];
-            byte randomCode[]= new byte[8];
             data[0]=0;
-            data[1]=(byte)170;//
+            data[1]=(byte)171;//data code for LED only
             data[2]=(byte)((shortAddr>>24)%256);
             data[3]=(byte)((shortAddr>>16)%256);
             data[4]=(byte)((shortAddr>>8)%256);
@@ -74,10 +71,10 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
             EnDeCode.setKey(randomCode);
             sD.add(data);
             while(!sD.checkFin()) Utils.sleep(3000);//check for finish send data
-            HostConnect HC= new HostConnect("", 15);
+            HC= new HostConnect("", 15);
             ILightSensor lightS = EDemoBoard.getInstance().getLightSensor();
             for(int i=0;i<8;i++){
-                        leds.getLED(i).setRGB(0, 0, 180);
+                        leds.getLED(i).setRGB(0, 0, 40);
             }
             while(true){//sendding data
                 try {
@@ -92,19 +89,12 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
                     }
                     HC.reset();
                     HC.writeInt(lightS.getAverageValue());
+                    HC.dg.writeDouble(temp.getAccuracy());
                     HC.send();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             }
-
-        }
-        /*Utils.sleep(5000);
-        sD.add(new byte[]{12,45,65,76,4,78,92,123});
-        Utils.sleep(3000);
-        sD.add(new byte[]{12,45,65,4,78,92,123});
-        Utils.sleep(8000);
-        sD.add(new byte[]{12,65,76,4,78,92,123});*/
 
     }
 

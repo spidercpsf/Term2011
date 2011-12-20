@@ -33,39 +33,35 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
     public static sendData sD= new sendData();
     public static threadListenLight tLL= new threadListenLight();
     public static HostConnect HC=null;
+    public static ITriColorLEDArray   leds = (ITriColorLEDArray) Resources.lookup(ITriColorLEDArray.class);
+    public static long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
+    //data for send to node to init new node
+    public static long hostAddr;
+
+    //
     protected void startApp() throws MIDletStateChangeException {
         System.out.println("Node started");
         BootloaderListenerService.getInstance().start();   // monitor the USB (if connected) and recognize commands from host
-        long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
+        
         int shortAddr= (int) (ourAddr);
         String sendAddr= Integer.toBinaryString(shortAddr);
         System.out.println("Our radio address = " + IEEEAddress.toDottedHex(shortAddr)+" "+shortAddr);
         tLL.start();
         sD.start();
-        if(shortAddr==19361){
             try {
                 System.out.println("This is connector");
+
                 HC = new HostConnect(14);
-                HC.writeByte((byte)14);
-                HC.send();
+                HC.dg.writeLong(0);//set to broadcast
+                HC.writeByte((byte)14);//send hello msg
+                hostAddr=HC.send();
+                System.out.println("Addr Host="+IEEEAddress.toDottedHex(hostAddr));
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-        }else{
-            System.out.println("This is sensor-node");
-            sD.add(new byte[]{0,(byte)170,(byte)((shortAddr>>24)%256),(byte)((shortAddr>>16)%256),(byte)((shortAddr>>8)%256),(byte)((shortAddr)%256)});//send addr   
-        }
-        /*Utils.sleep(5000);
-        sD.add(new byte[]{12,45,65,76,4,78,92,123});
-        Utils.sleep(3000);
-        sD.add(new byte[]{12,45,65,4,78,92,123});
-        Utils.sleep(8000);
-        sD.add(new byte[]{12,65,76,4,78,92,123});*/
-
     }
 
     protected void pauseApp() {
-        // This is not currently called by the Squawk VM
     }
 
     /**

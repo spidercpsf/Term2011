@@ -36,6 +36,7 @@ public class nodeOb {
     }
     public boolean update(byte[] data){//check if match key ->......
         this.data=data;
+        lastUpdate=new Date();
         return true;
     }
     public void draw(Graphics h,int W,int H){
@@ -55,10 +56,10 @@ public class nodeOb {
         //
         System.out.println("Draw "+ID);
         h.setColor(Color.BLACK);
-        h.drawRect((int) (x * W / 100.0), (int) (y * H / 100.0),(int)(weight*W/100.0),(int)(height*H/100.0));
-        h.drawString(ID+":", (int) (x * W / 100.0)+10, (int) (y * H / 100.0)+10);
-        h.drawString("Light:"+light+ " Temp:"+temp, (int) (x * W / 100.0)+10, (int) (y * H / 100.0)+30);
-        h.drawString(lastUpdate.toString(), (int) (x * W / 100.0)+10, (int) (y * H / 100.0)+50);
+        h.drawRect((int) (x * W / 100.0)+10, (int) (y * H / 100.0)+10,(int)(weight*W/100.0),(int)(height*H/100.0));
+        h.drawString(ID+":", (int) (x * W / 100.0)+20, (int) (y * H / 100.0)+25);
+        h.drawString("Light:"+light+ " Temp:"+temp, (int) (x * W / 100.0)+20, (int) (y * H / 100.0)+45);
+        h.drawString(lastUpdate.toString(), (int) (x * W / 100.0)+20, (int) (y * H / 100.0)+65);
     }
 
 }

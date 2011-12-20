@@ -17,7 +17,7 @@ import javax.microedition.io.*;
  */
 public class HostConnect{
     RadiogramConnection rCon = null;
-    Datagram dg = null;
+    public Datagram dg = null;
     static byte[] masterKey;
     static String addr;
     

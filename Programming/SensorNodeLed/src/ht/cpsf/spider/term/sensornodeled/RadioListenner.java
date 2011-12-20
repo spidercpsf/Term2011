@@ -28,13 +28,15 @@ public class RadioListenner implements  Runnable{
         stopFlag=false;
     }
     public void run() {
+        byte code;
         RadiogramConnection rCon = null;
         Datagram dg = null;
         RadiogramConnection rConOut = null;
         Datagram dgOut = null;
         int addrA;
         long addrFull;
-        byte[] data=new byte[24];
+        long recvAddr;
+        byte[] data=new byte[8];
         try {
             // Open up a server-side broadcast radiogram connection
             // to listen for sensor readings being sent by different SPOTs
@@ -51,17 +53,28 @@ public class RadioListenner implements  Runnable{
             try {
                 rCon.receive(dg);
                 String addr = dg.getAddress(); // read sender's Id
-                switch(dg.readByte()){//code for create connect from HOST is 01
-                    case 1://ID for request from HOST, datagram: 8byteID, 8byteRandomCode, 8byte masterkey for matching
-                        for(int i=0;i<24;i++)data[i]= dg.readByte();
+                recvAddr= dg.readLong();
+                if(recvAddr!=0 && recvAddr!= SunSpotApplication.ourAddr ){
+                        System.out.println("MSG for "+ IEEEAddress.toDottedHex(recvAddr));
+                        continue;
+                    }
+                code= dg.readByte();
+                System.out.println("Recv radio:"+addr+" vl="+code);
+                switch(code){//code for create connect from HOST is 01
+                    case (byte)171://ID for request from Connector, datagram: 8byteID of host (long), 8byteRandomCode, 8byte masterkey for matching
+                        for(int i=0;i<8;i++)data[i]= dg.readByte();
                         if(EnDeCode.check(data)){
                             data=EnDeCode.decode(data);
-                            byte[] mk=new byte[8];
-                            for(int i=0;i<8;i++) mk[i]=data[i+16];
-                            long addrH=0;
-                            for(int i=0;i<8;i++) addrH=addrH*256+data[i];
-                            HostConnect.setMasterKey(new byte[]{});
-                            HostConnect.addr= IEEEAddress.toDottedHex(addrH);
+                            SunSpotApplication.hostAddr=0;
+                            for(int i=0;i<8;i++) SunSpotApplication.hostAddr=SunSpotApplication.hostAddr*256+(char)data[i];
+                            System.out.println("Recv data for commucation: addrHost="+IEEEAddress.toDottedHex(SunSpotApplication.hostAddr));
+                            //send OK ACK
+                            System.out.println("SEND OK ACK to "+ addr);
+                            SunSpotApplication.HC.dg.reset();
+                            SunSpotApplication.HC.dg.writeLong(IEEEAddress.toLong(addr));
+                            SunSpotApplication.HC.dg.writeByte((byte)80);//hello
+                            SunSpotApplication.HC.send();
+                            //
                             SunSpotApplication.sD.tmpQ.empty();
                         }
                         break;

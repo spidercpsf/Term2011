@@ -9,6 +9,7 @@ import com.sun.spot.peripheral.TimeoutException;
 import com.sun.spot.resources.Resources;
 import com.sun.spot.resources.transducers.ITriColorLED;
 import com.sun.spot.resources.transducers.ILightSensor;
+import com.sun.spot.util.IEEEAddress;
 import com.sun.spot.util.Utils;
 import java.io.IOException;
 import javax.microedition.io.*;
@@ -18,7 +19,7 @@ import javax.microedition.io.*;
  */
 public class HostConnect{
     RadiogramConnection rCon = null;
-    Datagram dg = null;
+    public Datagram dg = null;
     RadiogramConnection rConIn = null;
     Datagram dgIn = null;
     int port;
@@ -31,7 +32,7 @@ public class HostConnect{
             // Open up a broadcast connection to the host port
             // where the 'on Desktop' portion of this demo is listening
             rCon = (RadiogramConnection) Connector.open("radiogram://broadcast:" + port);
-            dg = rCon.newDatagram(50);  // only sending 12 bytes of data
+            dg = rCon.newDatagram(5000);  // only sending 12 bytes of data
             
             rConIn = (RadiogramConnection) Connector.open("radiogram://:" + port);
             dgIn = rConIn.newDatagram(rConIn.getMaximumLength());
@@ -41,17 +42,18 @@ public class HostConnect{
             
         }
     }
-    String send() throws IOException {
+    long send() throws IOException {
         while(true){
+            System.out.println("Send radio data");
             rCon.send(dg);
             try{
                 rConIn.receive(dgIn);
                 //String addr = dg.getAddress();  // read sender's Id
-                //long time = dg.readLong();      // read time of the reading
+                long addr = dgIn.readLong();      // read Addr of target
                 int val = dgIn.readByte();         // read the sensor value
-                if(val==80) {
+                if(val==80&&addr==SunSpotApplication.ourAddr) {
                     System.out.println("Radio:OK ACK");
-                    return dgIn.getAddress();
+                    return IEEEAddress.toLong(dgIn.getAddress());
                 }
             }catch(TimeoutException e){
                 

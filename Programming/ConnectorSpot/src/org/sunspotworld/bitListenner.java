@@ -93,7 +93,7 @@ public class bitListenner implements signalListener{
         else {
 
             if(isStart) {
-                //System.out.print(b);
+                System.out.print(b);
                 //output+=b;
                 if(countData>=0&&countData/8<maxLen){
                     if(countData%8==0){
@@ -112,7 +112,7 @@ public class bitListenner implements signalListener{
         byte[] code= new byte[8];
         switch(data[1]){
             /**
-             * this case Node only have LED -> recv Node ID, random key of node
+             * this case Node  have LED -> recv Node ID, random key of node
              * after that using random key to create crypt msg to send to node by node ID
              */
             case (byte) 171:
@@ -128,10 +128,13 @@ public class bitListenner implements signalListener{
                 }
                 {//send data to NODE (loop send ultil recv OK ACK)
                     SunSpotApplication.HC.dg.reset();
+                    //write data for init secure in node, encode by recved RandomCode from LED NODE
+                    
                     SunSpotApplication.HC.dg.writeLong(addrN);//write addr of destimation
                     SunSpotApplication.HC.dg.writeByte((byte)171);//code of node
-                    //write data for init secure in node
+                    //data for init 
                     SunSpotApplication.HC.dg.writeLong(SunSpotApplication.hostAddr);//code of node
+
                     //
                     SunSpotApplication.HC.send();
                 }

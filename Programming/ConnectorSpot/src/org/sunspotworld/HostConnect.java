@@ -25,6 +25,8 @@ public class HostConnect{
     int port;
     int port2;
     String addr;
+    public boolean okACK;
+    public long sender;
     public HostConnect(int port){
         this.port=port;
         this.port2=port+1;
@@ -33,32 +35,23 @@ public class HostConnect{
             // where the 'on Desktop' portion of this demo is listening
             rCon = (RadiogramConnection) Connector.open("radiogram://broadcast:" + port);
             dg = rCon.newDatagram(5000);  // only sending 12 bytes of data
-            
-            rConIn = (RadiogramConnection) Connector.open("radiogram://:" + port);
-            dgIn = rConIn.newDatagram(rConIn.getMaximumLength());
-            rConIn.setTimeout(1000);
         } catch (Exception e) {
             System.err.println("Caught " + e + " in connection initialization.");
             
         }
     }
+    void send2() throws IOException{
+        rCon.send(dg);
+        
+    }
     long send() throws IOException {
-        while(true){
+        okACK=false;
+        while(!okACK){
             System.out.println("Send radio data");
             rCon.send(dg);
-            try{
-                rConIn.receive(dgIn);
-                //String addr = dg.getAddress();  // read sender's Id
-                long addr = dgIn.readLong();      // read Addr of target
-                int val = dgIn.readByte();         // read the sensor value
-                if(val==80&&addr==SunSpotApplication.ourAddr) {
-                    System.out.println("Radio:OK ACK");
-                    return IEEEAddress.toLong(dgIn.getAddress());
-                }
-            }catch(TimeoutException e){
-                
-            }
+            Utils.sleep(100);
         }
+        return sender;
     }
     void writeByte(byte d) throws IOException{
         dg.writeByte(d);

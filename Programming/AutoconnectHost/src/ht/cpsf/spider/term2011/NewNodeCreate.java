@@ -51,7 +51,7 @@ public class NewNodeCreate implements Runnable{
             dg = rCon.newDatagram(rCon.getMaximumLength());
             //rCon.setTimeout(1000);
             
-        } catch (Exception e) {
+        }catch (Exception e) {
             System.err.println("setUp caught " + e.getMessage());
             try {
                 throw e;
@@ -67,11 +67,15 @@ public class NewNodeCreate implements Runnable{
                     rCon.receive(dg);
                     String addr = dg.getAddress();  // read sender's Id
                     //long time = dg.readLong();      // read time of the reading
-                    recvAddr= dg.readLong();
+                    recvAddr= dg.readLong();//get addr
                     if(recvAddr!=0 && recvAddr!= SunSpotHostApplication.ourAddr ){
                         System.out.println("MSG for "+ IEEEAddress.toDottedHex(recvAddr));
                         continue;
                     }
+                    //encode and check
+                    
+                    //
+
                     int val = dg.readByte();         // read the sensor value
                     System.out.println("from: " + addr + "   value = " + val);
                     if(!dg.getAddress().equals("0014.4F01.0000.4BA1")){
@@ -94,6 +98,23 @@ public class NewNodeCreate implements Runnable{
                             dgOut.writeByte((byte)80);
                             rConOut.send(dgOut);
                             //
+                            break;
+                        case (byte)162:// -> tempory code to connect to node (node havent light sensor,only LED)
+                            System.out.println("Code=161:to connect to node (node have only light sensor)");
+                            if(!connectorAddr.equals(addr)){
+                                connectorAddr=addr;
+                                rConOut = (RadiogramConnection) Connector.open("radiogram://"+addr+":" + HOST_PORT);
+                                dgOut = rConOut.newDatagram(50);  // only sending 12 bytes of data
+                            }
+                            //
+                            dgOut.reset();
+                            dgOut.writeLong(IEEEAddress.toLong(addr));
+                            dgOut.writeByte((byte)80);
+                            rConOut.send(dgOut);
+                            //read data from MSG
+                            addrFull=dg.readLong();//read ADDR of new Node
+                            //add to list node
+                            SunSpotHostApplication.nM.addNode(IEEEAddress.toDottedHex(addrFull),"");
                             break;
                         case (byte)161:// -> tempory code to connect to node (node havent light sensor,only LED)
                             System.out.println("Code=161:to connect to node (node havent light sensor,only LED)");

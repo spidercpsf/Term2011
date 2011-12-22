@@ -21,14 +21,16 @@ public class bitDetect {
     int preBit=0;
     int preLen=0;
     int count0=0;
-    int count1;
+    int count1=0;
     int lenSS0=0;
     int lenSS1=0;
     int lenSS2=0;
     //
     int id=0;
+    double sum;
     double max0=0,min0=3000,max1=0,min1=3000;
     int maxC0=0,minC0=100,maxC1=0,minC1=100;
+    double xLight=1;
     /**
      * lenSS0<=x1<lenSS1<=x2<lenSS2
      * @param thresholdStatus
@@ -40,7 +42,7 @@ public class bitDetect {
      * @param listener
      */
     public bitDetect(double thresholdStatus,double threashold01_0,double threashold01_1,int lenSS0,int lenSS1,int lenSS2,int thresholdLen01,signalListener listener){
-        status=0;
+        status=1;
         this.thresholdStatus= thresholdStatus;
         this.threshold01_0= threashold01_0;
         this.threshold01_1= threashold01_1;
@@ -56,24 +58,30 @@ public class bitDetect {
         //System.out.println("*"+value);
         if(value<thresholdStatus){
             if(status==1){
+                id+=1;
                 if(preBit==1&&preLen>=lenSS0&&max>threshold01_1&&count1>=lenSS0){
                     if(count1>=lenSS1&&preLen<lenSS1&&count1<lenSS2){//stop
-                        System.out.println("STOP ACK:"+preLen+" "+count1);
+                        System.out.println("STOP ACK:"+preLen+" "+count1+" idCount="+id);
                         listener.newBit('T');
-
                         preBit=0;
                         preLen=0;
                         count1=0;
                         id=0;
+                        max=0;
                         return;
                     }else if(preLen>=lenSS1&&preLen<lenSS2&&count1<lenSS1){//start
                         listener.newBit('S');
                         System.out.println("START ACK:"+preLen+" "+count1);
+                        xLight=(sum/count1)/140;
+                        System.out.println("Avg="+(sum/count1)+" ->*="+xLight);
                         preBit=0;
                         preLen=0;
                         count1=0;
-                        id=0;//count number of bit recved
+                        id=0;
+                        max=0;
 
+                        sum=0;
+                        System.out.println("Env:"+status+" "+thresholdStatus+" "+threshold01_0+" "+threshold01_1+" "+thresholdLen01+" "+max+" "+preBit+" "+count0+" "+count1+" "+lenSS0+" "+lenSS1+" "+lenSS2+" "+id);
                         return;
                     }else if(preLen<lenSS1&&count1<lenSS1){//OK ACK
                         listener.newBit('O');
@@ -81,6 +89,7 @@ public class bitDetect {
                         preBit=0;
                         preLen=0;
                         count1=0;
+                        max=0;
                         return;
                     }else if(preLen>=lenSS1&&count1>=lenSS1&&preLen<lenSS2&&count1<lenSS2){//FALSE ACK
                         listener.newBit('F');
@@ -88,13 +97,14 @@ public class bitDetect {
                         preBit=0;
                         preLen=0;
                         count1=0;
+                        max=0;
                         return;
                     }
                 }
-                //System.out.print(max + " ");
                 if(count1>0&&count1<lenSS0){
-                        id+=1;
-                        if(max<threshold01_0){
+
+                        if(max<threshold01_0*xLight){
+
                             if(count1<thresholdLen01-3){
                                 System.out.print("&");
                                 //if('1'!= test.charAt(id)) System.out.println("False1:");
@@ -104,7 +114,8 @@ public class bitDetect {
                                 listener.newBit('0');
                             }
                             preBit=0;
-                        }else if(max>threshold01_1){
+                        }else if(max>threshold01_1*xLight){
+
                             //if('1'!= test.charAt(id)) System.out.println("False3:");
                             if(count1>thresholdLen01+2){
                                 System.out.print("&");
@@ -129,12 +140,17 @@ public class bitDetect {
                         }
 
                 }else if(count1>0){
-                    if(max>threshold01_0)preBit=1;
+                    if(max>threshold01_0){
+                        preBit=1;
+
+                    }
+
                 }
                 preLen=count1;
                 count1=0;
                 status=0;
                 count0=0;
+                sum=0;
                 //check start stop
             }else{
                 count0++;
@@ -148,7 +164,9 @@ public class bitDetect {
         }else{
             if(status==0) status=1;
             count1++;
+            sum+=value;
             if(max< value) max=value;
         }
     }
+
 }

@@ -35,63 +35,39 @@ import javax.microedition.midlet.MIDletStateChangeException;
  * 
  */
 public  class SunSpotApplication extends MIDlet implements defineThreshold{
-    public static sendData sD= new sendData();
     public static threadListenLight tLL= new threadListenLight();
     public static HostConnect HC=null;
-    public static byte randomCode[]=new byte[14];
-    ITriColorLEDArray   leds = (ITriColorLEDArray) Resources.lookup(ITriColorLEDArray.class);
-    ITriColorLED    led3= leds.getLED(3);
+    public static RadioListenner RL= null;
+    public static byte randomCode[]=new byte[8];
+    public static boolean isConfig=false;
+    public static long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
+    //data for radio commucation
+    static long hostAddr;
+    
+    //
     protected void startApp() throws MIDletStateChangeException {
         System.out.println("Node started");
         BootloaderListenerService.getInstance().start();   // monitor the USB (if connected) and recognize commands from host
-        long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
+        ILightSensor lightS = EDemoBoard.getInstance().getLightSensor();
         int shortAddr= (int) (ourAddr);
         String sendAddr= Integer.toBinaryString(shortAddr);
         System.out.println("Our radio address = " + IEEEAddress.toDottedHex(shortAddr)+" "+shortAddr);
         tLL.start();
-        sD.start();
-        if(shortAddr==19361){
-            try {
-                System.out.println("This is connector");
-                HC = new HostConnect("C0A8.0B11.0000.DCC8", 14);
-                HC.writeInt(1412);
-                HC.send();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }else{
-            System.out.println("This is sensor-node");
-            sD.add(new byte[]{0,85});//hello packet
-            //sD.add(new byte[]{0,(byte)170,(byte)((shortAddr>>24)%256),(byte)((shortAddr>>16)%256),(byte)((shortAddr>>8)%256),(byte)((shortAddr)%256)});//send addr
-            Random rd= new Random(new Date().getTime());
-            randomCode[0]=0;
-            randomCode[1]=(byte)170;//
-            randomCode[2]=(byte)((shortAddr>>24)%256);
-            randomCode[3]=(byte)((shortAddr>>16)%256);
-            randomCode[4]=(byte)((shortAddr>>8)%256);
-            randomCode[5]=(byte)((shortAddr)%256);
-            for(int i=6;i<14;i++) randomCode[i]=(byte)(rd.nextInt()%255);
-            sD.add(randomCode);
-            while(!sD.checkFin()) Utils.sleep(3000);//check for finish send data
-            HostConnect HC= new HostConnect("", 15);
-            ILightSensor lightS = EDemoBoard.getInstance().getLightSensor();
-            for(int i=0;i<8;i++){
-                        leds.getLED(i).setRGB(0, 0, 180);
-            }
+        HC= new HostConnect(14);
+        RL = new RadioListenner(14);
+                RL.start();
+        {
+            System.out.println("This is sensor-node only Light Sensor");
+            while(!isConfig) Utils.sleep(1000);
+            HC= new HostConnect(15);
             while(true){//sendding data
                 try {
                     //sendding data
-                    Utils.sleep(500);
-                    for(int i=0;i<8;i++){
-                        leds.getLED(i).setOn();
-                    }
-                    Utils.sleep(500);
-                    for(int i=0;i<8;i++){
-                        leds.getLED(i).setOff();
-                    }
+                    Utils.sleep(1000);
                     HC.reset();
                     HC.writeInt(lightS.getAverageValue());
-                    HC.send();
+                    HC.dg.writeDouble(1412);
+                    HC.send2();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }

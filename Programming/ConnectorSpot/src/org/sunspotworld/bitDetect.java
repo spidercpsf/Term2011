@@ -1,5 +1,7 @@
 package org.sunspotworld;
 
+import java.io.IOException;
+
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -54,7 +56,7 @@ public class bitDetect {
 
     }
 
-    void addSignal(double value){
+    void addSignal(double value) throws IOException{
         //System.out.println("*"+value);
         if(value<thresholdStatus){
             if(status==1){
@@ -72,8 +74,18 @@ public class bitDetect {
                     }else if(preLen>=lenSS1&&preLen<lenSS2&&count1<lenSS1){//start
                         listener.newBit('S');
                         System.out.println("START ACK:"+preLen+" "+count1);
-                        xLight=(sum/count1)/132;
+                        xLight=(sum/count1)/136;
+                        if(xLight<0.85)xLight=0.85;
+                        if(xLight>1.2)xLight=1.2;
+
                         System.out.println("Avg="+(sum/count1)+" ->*="+xLight);
+                        //send hello packet to HOST
+                            SunSpotApplication.HC.initSend(0, 1, SunSpotApplication.hostCode);
+                            SunSpotApplication.HC.dos.writeByte((byte)0);//send log
+                            SunSpotApplication.HC.dos.writeDouble(sum/count1);//send log
+                            SunSpotApplication.HC.dos.writeDouble(xLight);//send log
+                            SunSpotApplication.HC.send2();
+                        //
                         preBit=0;
                         preLen=0;
                         count1=0;

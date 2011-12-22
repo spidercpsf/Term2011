@@ -21,9 +21,10 @@ public class nodeOb {
     int x,y;
     int weight,height;
     Date lastUpdate;
-    public nodeOb(String ID,String info,int x,int y,int weight,int height){
+    byte[] code;
+    public nodeOb(String ID,byte[] code,int x,int y,int weight,int height){
         this.ID=ID;
-        this.info=info;
+        this.code=code;
         this.x=x;
         this.y=y;
         this.weight=weight;

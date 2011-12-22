@@ -17,7 +17,7 @@ import com.sun.spot.util.Utils;
  */
 public class sendData  implements defineThreshold, Runnable{
     ITriColorLEDArray leds ;
-    ITriColorLED    led7;
+    ITriColorLED    led7,led6;
     Queue q= new Queue();
     Queue tmpQ= new Queue();
     crc8 c8= new crc8();
@@ -42,7 +42,9 @@ public class sendData  implements defineThreshold, Runnable{
     public sendData(){
         leds = (ITriColorLEDArray) Resources.lookup(ITriColorLEDArray.class);
         led7= leds.getLED(7);
+        led6= leds.getLED(6);
         led7.setRGB(0, 100, 0);
+        led6.setRGB(0, 100, 0);
     }
     public void run() {
         byte[] data;

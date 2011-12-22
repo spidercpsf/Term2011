@@ -36,11 +36,13 @@ import javax.microedition.midlet.MIDletStateChangeException;
  * 
  */
 public  class SunSpotApplication extends MIDlet implements defineThreshold{
+    public static EnDeCode edc;
     public static sendData sD= new sendData();
     public static HostConnect HC=null;
     public static RadioListenner RL= null;
     static long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
     static byte randomCode[]= new byte[8];
+    static byte hostCode[]= new byte[8];
     //data for radio commucation
     static long hostAddr;
     //
@@ -57,7 +59,8 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
         sD.start();
         RL = new RadioListenner(14);
         RL.start();
-        HC= new HostConnect("", 14);
+        HC= new HostConnect(14);
+        
             System.out.println("This is sensor-node");
             Random rd= new Random(new Date().getTime());
             byte data[]=new byte[14];
@@ -68,10 +71,10 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
             data[4]=(byte)((shortAddr>>8)%256);
             data[5]=(byte)((shortAddr)%256);
             for(int i=6;i<14;i++) data[i]=randomCode[i-6]=(byte)(rd.nextInt()%255);
-            EnDeCode.setKey(randomCode);
+            edc= new EnDeCode(randomCode);
             sD.add(data);
             while(!sD.checkFin()) Utils.sleep(3000);//check for finish send data
-            HC= new HostConnect("", 15);
+            HC= new HostConnect(15);
             ILightSensor lightS = EDemoBoard.getInstance().getLightSensor();
             for(int i=0;i<8;i++){
                         leds.getLED(i).setRGB(0, 0, 40);
@@ -87,10 +90,10 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
                     for(int i=0;i<8;i++){
                         leds.getLED(i).setOff();
                     }
-                    HC.reset();
-                    HC.writeInt(lightS.getAverageValue());
-                    HC.dg.writeDouble(temp.getAccuracy());
-                    HC.send();
+                    HC.initSend(hostAddr, 12,randomCode);//after replace randomCode with true Code
+                    HC.dos.writeInt(lightS.getAverageValue());
+                    HC.dos.writeDouble(temp.getAccuracy());
+                    HC.send2();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }

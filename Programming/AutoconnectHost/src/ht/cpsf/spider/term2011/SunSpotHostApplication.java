@@ -28,6 +28,7 @@ public class SunSpotHostApplication {
     static nodeManager nM= new nodeManager(20,10);
     static long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
     public static byte key[]= new byte[]{14,5,24,64,76,87,54,12};
+    public static EnDeCode edc= new EnDeCode(SunSpotHostApplication.key);
     /**
      * Print out our radio address.
      */

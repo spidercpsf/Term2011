@@ -13,8 +13,10 @@ import com.sun.spot.io.j2me.radiostream.*;
 import com.sun.spot.io.j2me.radiogram.*;
 import com.sun.spot.peripheral.TimeoutException;
 import com.sun.spot.util.IEEEAddress;
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.logging.Level;
@@ -40,7 +42,12 @@ public class NewNodeCreate implements Runnable{
         Datagram dg = null;
         RadiogramConnection rConOut = null;
         Datagram dgOut = null;
+        
+        DataInputStream dis;
+        byte[] data;
+        byte[] dt;
         int addrA;
+        int size;
         long addrFull;
         long recvAddr;
         byte[] randomCode=new byte[8];
@@ -60,6 +67,7 @@ public class NewNodeCreate implements Runnable{
             }
         }
         // Main data collection loop
+
         while (true) {
             try {
                 // Read sensor sample received over the radio
@@ -68,21 +76,35 @@ public class NewNodeCreate implements Runnable{
                     String addr = dg.getAddress();  // read sender's Id
                     //long time = dg.readLong();      // read time of the reading
                     recvAddr= dg.readLong();//get addr
+                    System.out.println(IEEEAddress.toDottedHex(recvAddr));
                     if(recvAddr!=0 && recvAddr!= SunSpotHostApplication.ourAddr ){
                         System.out.println("MSG for "+ IEEEAddress.toDottedHex(recvAddr));
                         continue;
                     }
-                    //encode and check
-                    
-                    //
 
-                    int val = dg.readByte();         // read the sensor value
-                    System.out.println("from: " + addr + "   value = " + val);
-                    if(!dg.getAddress().equals("0014.4F01.0000.4BA1")){
-                        System.out.println("    Check FALSE");
+                    size =  dg.readInt();//read length
+                    data= new byte[size];//create new array for store data
+                    for(int i=0;i<size;i++) data[i]=dg.readByte();//get data
+                    System.out.println("from: " + addr + "   Size = " + size);
+                    //encode and check
+                    if(!SunSpotHostApplication.edc.checkCode(SunSpotHostApplication.key,data)){
                         continue;
                     }
+                    data= SunSpotHostApplication.edc.DeCode(SunSpotHostApplication.key,data);
+                    System.out.println("Size of pack:"+data.length);
+                    dis = new DataInputStream(new ByteArrayInputStream(data));
+                    //
+                    int val = dis.readByte();         // read the sensor value
+                    System.out.println("from: " + addr + "   value = " + val);
+                    /*if(!dg.getAddress().equals("0014.4F01.0000.4BA1")){
+                        System.out.println("    Check FALSE");
+                        continue;
+                    }*/
                     switch (val){
+                        case (byte) 0:
+                            System.out.println("Log:"+dis.readDouble()+" "+dis.readDouble());
+                            break;
+
                         case (byte)14:
                             System.out.println("Hello messenger from connector");
                             if(!connectorAddr.equals(addr)){
@@ -95,7 +117,9 @@ public class NewNodeCreate implements Runnable{
                             System.out.println("Sendding Hellomsg to Connector..");
                             dgOut.reset();
                             dgOut.writeLong(IEEEAddress.toLong(addr));
-                            dgOut.writeByte((byte)80);
+                            dt = SunSpotHostApplication.edc.EnCode(SunSpotHostApplication.key,new byte[]{80});
+                            dgOut.writeInt(dt.length);
+                            dgOut.write(dt);
                             rConOut.send(dgOut);
                             //
                             break;
@@ -106,15 +130,21 @@ public class NewNodeCreate implements Runnable{
                                 rConOut = (RadiogramConnection) Connector.open("radiogram://"+addr+":" + HOST_PORT);
                                 dgOut = rConOut.newDatagram(50);  // only sending 12 bytes of data
                             }
+                            //read data from MSG
+                            addrFull=dis.readLong();//read ADDR of new Node
+                            for(int i=0;i<8;i++) randomCode[i]=dg.readByte();
+                            //add to list node
+                            SunSpotHostApplication.nM.addNode(IEEEAddress.toDottedHex(addrFull),randomCode);
                             //
+                            System.out.println("Sendding Hellomsg to Connector..");
                             dgOut.reset();
                             dgOut.writeLong(IEEEAddress.toLong(addr));
-                            dgOut.writeByte((byte)80);
+                            dt = SunSpotHostApplication.edc.EnCode(SunSpotHostApplication.key,new byte[]{80});
+                            dgOut.writeInt(dt.length);
+                            dgOut.write(dt);
                             rConOut.send(dgOut);
-                            //read data from MSG
-                            addrFull=dg.readLong();//read ADDR of new Node
-                            //add to list node
-                            SunSpotHostApplication.nM.addNode(IEEEAddress.toDottedHex(addrFull),"");
+                            //
+                            
                             break;
                         case (byte)161:// -> tempory code to connect to node (node havent light sensor,only LED)
                             System.out.println("Code=161:to connect to node (node havent light sensor,only LED)");
@@ -123,34 +153,21 @@ public class NewNodeCreate implements Runnable{
                                 rConOut = (RadiogramConnection) Connector.open("radiogram://"+addr+":" + HOST_PORT);
                                 dgOut = rConOut.newDatagram(50);  // only sending 12 bytes of data
                             }
-                            //
-                            dgOut.reset();
-                            dgOut.writeLong(IEEEAddress.toLong(addr));
-                            dgOut.writeByte((byte)80);
-                            rConOut.send(dgOut);
                             //read data from MSG
-                            addrFull=dg.readLong();//read ADDR of new Node
+                            addrFull=dis.readLong();//read ADDR of new Node
+                            for(int i=0;i<8;i++) randomCode[i]=dis.readByte();
                             //add to list node
-                            SunSpotHostApplication.nM.addNode(IEEEAddress.toDottedHex(addrFull),"");
-                            break;
-                        case (byte)160:// -> node have LED and light sensor -> direct sent host and node info
-                            if(!connectorAddr.equals(addr)){
-                                connectorAddr=addr;
-                                rConOut = (RadiogramConnection) Connector.open("radiogram://"+addr+":" + HOST_PORT);
-                                dgOut = rConOut.newDatagram(50);  // only sending 12 bytes of data
-                            }
+                            SunSpotHostApplication.nM.addNode(IEEEAddress.toDottedHex(addrFull),randomCode);
                             //
+                            System.out.println("Sendding Hellomsg to Connector..");
                             dgOut.reset();
                             dgOut.writeLong(IEEEAddress.toLong(addr));
-                            dgOut.writeByte((byte)80);
+                            dt = SunSpotHostApplication.edc.EnCode(SunSpotHostApplication.key,new byte[]{80});
+                            dgOut.writeInt(dt.length);
+                            dgOut.write(dt);
                             rConOut.send(dgOut);
                             //
-                            addrA=dg.readInt();
                             
-                            for(int i=0;i<8;i++) randomCode[i]=dg.readByte();
-                            addrFull=IEEEAddress.toLong("0014.4F01.0000.0000")+addrA;
-                            //add to list node
-                            SunSpotHostApplication.nM.addNode(IEEEAddress.toDottedHex(addrFull),"");
                             break;
                 }
                 }catch(TimeoutException e){

@@ -7,6 +7,8 @@ package ht.cpsf.spider.term.sensornodeled;
 
 import com.sun.spot.io.j2me.radiogram.RadiogramConnection;
 import com.sun.spot.util.IEEEAddress;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import javax.microedition.io.Connector;
 import javax.microedition.io.Datagram;
@@ -33,7 +35,10 @@ public class RadioListenner implements  Runnable{
         Datagram dg = null;
         RadiogramConnection rConOut = null;
         Datagram dgOut = null;
+        EnDeCode edc= new EnDeCode(SunSpotApplication.randomCode);
+        DataInputStream dis;
         int addrA;
+        int size;
         long addrFull;
         long recvAddr;
         byte[] data=new byte[8];
@@ -46,43 +51,51 @@ public class RadioListenner implements  Runnable{
 
         } catch (Exception e) {
             System.err.println("setUp caught " + e.getMessage());
-            
         }
         // Main data collection loop
         while (true) {
             try {
                 rCon.receive(dg);
                 String addr = dg.getAddress(); // read sender's Id
-                recvAddr= dg.readLong();
-                if(recvAddr!=0 && recvAddr!= SunSpotApplication.ourAddr ){
-                        System.out.println("MSG for "+ IEEEAddress.toDottedHex(recvAddr));
-                        continue;
-                    }
-                code= dg.readByte();
-                System.out.println("Recv radio:"+addr+" vl="+code);
-                switch(code){//code for create connect from HOST is 01
-                    case (byte)171://ID for request from Connector, datagram: 8byteID of host (long), 8byteRandomCode, 8byte masterkey for matching
-                        for(int i=0;i<8;i++)data[i]= dg.readByte();
-                        if(EnDeCode.check(data)){
-                            data=EnDeCode.decode(data);
-                            SunSpotApplication.hostAddr=0;
-                            for(int i=0;i<8;i++) SunSpotApplication.hostAddr=SunSpotApplication.hostAddr*256+(char)data[i];
-                            System.out.println("Recv data for commucation: addrHost="+IEEEAddress.toDottedHex(SunSpotApplication.hostAddr));
-                            //send OK ACK
-                            System.out.println("SEND OK ACK to "+ addr);
-                            SunSpotApplication.HC.dg.reset();
-                            SunSpotApplication.HC.dg.writeLong(IEEEAddress.toLong(addr));
-                            SunSpotApplication.HC.dg.writeByte((byte)80);//hello
-                            SunSpotApplication.HC.send();
-                            //
-                            SunSpotApplication.sD.tmpQ.empty();
-                        }
-                        break;
+                //long time = dg.readLong();      // read time of the reading
+                recvAddr = dg.readLong(); //get addr
+                if (recvAddr != 0 && recvAddr != SunSpotApplication.ourAddr) {
+                    System.out.println("MSG for " + IEEEAddress.toDottedHex(recvAddr));
+                    continue;
                 }
+                size = dg.readInt(); //read length
+                data = new byte[size]; //create new array for store data
+                for (int i = 0; i < size; i++) {
+                    data[i] = dg.readByte(); //get data
+                    //encode and check
+                } //get data
+                //encode and check
+                if (!edc.checkCode(IEEEAddress.toLong(addr),data)) {//check data from addr Node
+                    continue;
+                }
+                data = edc.DeCode(IEEEAddress.toLong(addr),data);
+                dis = new DataInputStream(new ByteArrayInputStream(data));
+                //
+                int val = dis.readByte(); // read the sensor value
+                System.out.println("from: " + addr + "   value = " + val);
+                switch (val) {
+                    case (byte) 171:
+                        //ID for request from Connector, datagram: 8byteID of host (long)
+                        //read data for init sensor
+                        SunSpotApplication.hostAddr = dis.readLong();
+                        for(int i=0;i<8;i++) SunSpotApplication.hostCode[i]= dis.readByte();
+                        //
+                        System.out.println("Recv data for commucation: addrHost=" + IEEEAddress.toDottedHex(SunSpotApplication.hostAddr));
+                        SunSpotApplication.HC.sendOK(IEEEAddress.toLong(addr),SunSpotApplication.randomCode);//send OK ACK
+                        SunSpotApplication.sD.tmpQ.empty();
+                }
+                break;
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+
         }
+
     }
 
 }

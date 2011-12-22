@@ -32,14 +32,15 @@ public class nodeManager {
      * @param y
      * @return
      */
-    public int addNode(String ID,String info,int x,int y){
+    public int addNode(String ID,byte[] code,int x,int y){
         int i;
         System.out.println("Add node "+ ID +" at "+x+" "+y);
+        System.out.print("  key:");for(i=0;i<8;i++) System.out.print(code[i]+ " ");System.out.println();
         for(i=0;i<listNode.size();i++) if(listNode.get(i).ID.equals(ID)){
             System.out.println("Already have "+ID);
             return 1;
         }
-        nodeOb newN= new nodeOb(ID, info, x, y,weight,height);
+        nodeOb newN= new nodeOb(ID, code, x, y,weight,height);
         listNode.add(newN);
         return 0;
     }
@@ -52,16 +53,14 @@ public class nodeManager {
      * @param y
      * @return
      */
-    public int addNode(String ID,String info){
+    public int addNode(String ID,byte[] code){
         int x,y;
-        
         //calc max node in 1 line
         int maxN1L=(int) (100 / (weight * 1.2));
         x=(listNode.size()%maxN1L)*(int)(1.2*weight);
         y=(listNode.size()/maxN1L)*(int)(1.2*height);
         //
-        
-        return addNode(ID, info,x,y);
+        return addNode(ID, code,x,y);
     }
     /**
      * Update data to node
@@ -78,6 +77,12 @@ public class nodeManager {
         }
         System.out.println("Cant find "+ID);
         return 1;
+    }
+    public nodeOb getNode(String ID){
+        for(int i=0;i<listNode.size();i++) if(listNode.get(i).ID.equals(ID)){
+            return listNode.get(i);
+        }
+        return null;
     }
     ArrayList<nodeOb> getList(){
         return listNode;

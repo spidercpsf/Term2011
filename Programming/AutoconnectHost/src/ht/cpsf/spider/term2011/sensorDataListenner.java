@@ -7,6 +7,7 @@ package ht.cpsf.spider.term2011;
 
 import com.sun.spot.io.j2me.radiogram.Radiogram;
 import com.sun.spot.io.j2me.radiogram.RadiogramConnection;
+import com.sun.spot.util.IEEEAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.microedition.io.Connector;
@@ -27,7 +28,9 @@ public class sensorDataListenner implements Runnable{
     public void run() {
         RadiogramConnection rCon = null;
         Datagram dg = null;
-        
+        long recvAddr;
+        int size;
+        byte[] data;
         try {
             // Open up a server-side broadcast radiogram connection
             // to listen for sensor readings being sent by different SPOTs
@@ -52,16 +55,30 @@ public class sensorDataListenner implements Runnable{
                     String addr = dg.getAddress();  // read sender's Id
                     //long time = dg.readLong();      // read time of the reading
                     //int val = dg.readInt();         // read the sensor value
-                    byte[] data=new byte[dg.getLength()];
+                    
                     /*for(int i=0;i<100&&i<dg.getLength();i++) {
                         data[dg.getLength()-i-1]=dg.readByte();
                         System.out.println(i+" "+data[i]+" "+dg.getLength());
                     }*/
-                    dg.readFully(data);
-                    
+                    recvAddr= dg.readLong();//get addr
+                    System.out.println(IEEEAddress.toDottedHex(recvAddr));
+                    if(recvAddr!=0 && recvAddr!= SunSpotHostApplication.ourAddr ){
+                        System.out.println("MSG for "+ IEEEAddress.toDottedHex(recvAddr));
+                        continue;
+                    }
+
+                    size =  dg.readInt();//read length
+                    data= new byte[size];//create new array for store data
+                    for(int i=0;i<size;i++) data[i]=dg.readByte();//get data
+                    System.out.println("from: " + addr + "   Size = " + size);
+                    //encode and check
+                    if(!SunSpotHostApplication.edc.checkCode(SunSpotHostApplication.nM.getNode(addr).code,data)){
+                        continue;
+                    }
                     //System.out.println(SunSpotHostApplication.NM.checkNodeAddr(addr)+ " DATASENSOR from: " + addr);
                     //if(SunSpotHostApplication.NM.checkNodeAddr(addr)){
-                        SunSpotHostApplication.nM.updateNode(addr,data);
+                     data=SunSpotHostApplication.edc.DeCode(SunSpotHostApplication.nM.getNode(addr).code, data);
+                     SunSpotHostApplication.nM.updateNode(addr,data);
                     //}
                     dg.reset();
             } catch (Exception e) {

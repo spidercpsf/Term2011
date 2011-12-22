@@ -93,7 +93,7 @@ public class bitListenner implements signalListener{
         else {
 
             if(isStart) {
-                System.out.print(b);
+                //System.out.print(b);
                 //output+=b;
                 if(countData>=0&&countData/8<maxLen){
                     if(countData%8==0){
@@ -107,54 +107,50 @@ public class bitListenner implements signalListener{
         }
     }
     private void doWithData(byte[] data) throws IOException{
-        long addrN;
         byte i;
-        byte[] code= new byte[8];
+        //byte[] code= new byte[8];
         switch(data[1]){
             /**
              * this case Node  have LED -> recv Node ID, random key of node
              * after that using random key to create crypt msg to send to node by node ID
              */
             case (byte) 171:
-                System.out.println("LED only node");
-                for(addrN=0,i=0;i<4;i++){
-                    addrN=addrN*256 + (data[i+2]<0?256+data[i+2]:data[i+2]);
+                System.out.println("Have LED node");
+                for(SunSpotApplication.addrN=0,i=0;i<4;i++){
+                    SunSpotApplication.addrN=SunSpotApplication.addrN*256 + (data[i+2]<0?256+data[i+2]:data[i+2]);
                 }
-                addrN+=IEEEAddress.toLong("0014.4F01.0000.0000");
-                System.out.println("Rcv from "+ IEEEAddress.toDottedHex(addrN));
+                for(i=0;i<8;i++)SunSpotApplication.randomCode[i]=data[i+6];
+                SunSpotApplication.addrN+=IEEEAddress.toLong("0014.4F01.0000.0000");
+                System.out.println("Rcv from "+ IEEEAddress.toDottedHex(SunSpotApplication.addrN));
                 for(i=0;i<8;i++) {
                     SunSpotApplication.leds.getLED(i).setColor(LEDColor.RED);
                     SunSpotApplication.leds.getLED(i).setOn();
                 }
                 {//send data to NODE (loop send ultil recv OK ACK)
-                    SunSpotApplication.HC.dg.reset();
+                    System.out.println("Send data to node");
+                    SunSpotApplication.HC.initSend(SunSpotApplication.addrN, 9,SunSpotApplication.randomCode);
                     //write data for init secure in node, encode by recved RandomCode from LED NODE
-                    
-                    SunSpotApplication.HC.dg.writeLong(addrN);//write addr of destimation
-                    SunSpotApplication.HC.dg.writeByte((byte)171);//code of node
+                    SunSpotApplication.HC.dos.writeByte((byte)171);//code of node
                     //data for init 
-                    SunSpotApplication.HC.dg.writeLong(SunSpotApplication.hostAddr);//code of node
-
+                    SunSpotApplication.HC.dos.writeLong(SunSpotApplication.hostAddr);//code of node
+                    SunSpotApplication.HC.dos.write(SunSpotApplication.hostCode, 0, 8);
                     //
                     SunSpotApplication.HC.send();
                 }
                 {//send data to HOST
-                    SunSpotApplication.HC.dg.reset();
-                    SunSpotApplication.HC.dg.writeLong(SunSpotApplication.hostAddr);
-                    SunSpotApplication.HC.dg.writeByte((byte)161);
+                    System.out.println("Send data to HOST");
+                    SunSpotApplication.HC.initSend(SunSpotApplication.hostAddr, 9,SunSpotApplication.hostCode);
+                    //
+                    SunSpotApplication.HC.dos.writeByte((byte)161);
                     //write data for create connect
-                    SunSpotApplication.HC.dg.writeLong(addrN);
+                    SunSpotApplication.HC.dos.writeLong(SunSpotApplication.addrN);
+                    SunSpotApplication.HC.dos.write(SunSpotApplication.randomCode, 0, 8);
                     //
                     SunSpotApplication.HC.send();
                 }
                 for(i=0;i<8;i++) {
                     SunSpotApplication.leds.getLED(i).setOff();
                 }
-                break;
-            case (byte)170:
-                SunSpotApplication.HC.reset();
-                SunSpotApplication.HC.writeByteArr(data, 1, 13);
-                SunSpotApplication.HC.send();
                 break;
             case (byte) 85:
                 System.out.println("Hello Packet\n");

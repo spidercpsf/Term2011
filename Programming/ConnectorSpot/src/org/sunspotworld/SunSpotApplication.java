@@ -32,6 +32,7 @@ import javax.microedition.midlet.MIDletStateChangeException;
  * 
  */
 public  class SunSpotApplication extends MIDlet implements defineThreshold{
+    public static EnDeCode edc;
     public static sendData sD= new sendData();
     public static threadListenLight tLL= new threadListenLight();
     public static HostConnect HC=null;
@@ -39,9 +40,12 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
     public static ITriColorLEDArray   leds = (ITriColorLEDArray) Resources.lookup(ITriColorLEDArray.class);
     public static long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
     int shortAddr= (int) (ourAddr);
+
     //data for send to node to init new node
     public static long hostAddr;
+    public static long addrN;
     static byte randomCode[]= new byte[8];
+    static byte hostCode[] = new byte[]{14,5,24,64,76,87,54,12};
     //
     protected void startApp() throws MIDletStateChangeException {
         System.out.println("Node started");
@@ -50,23 +54,24 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
         System.out.println("Our radio address = " + IEEEAddress.toDottedHex(shortAddr)+" "+shortAddr);
         tLL.start();
         sD.start();
-        
+        edc= new EnDeCode(hostCode);
             try {
                 System.out.println("This is connector");
                 RL = new RadioListenner(14);
                 RL.start();
                 HC = new HostConnect(14);
-                HC.dg.writeLong(0);//set to broadcast
-                HC.writeByte((byte)14);//send hello msg
+                //send hello packet to HOST
+                HC.initSend(0, 1, hostCode);
+                HC.dos.writeByte((byte)14);//send hello msg
                 hostAddr=HC.send();
+                //
                 System.out.println("Addr Host="+IEEEAddress.toDottedHex(hostAddr));
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-        
         //tmp for send data to light sensor only node
-        Utils.sleep(5000);
-        sendToLightSensorOnlyNode();
+        //Utils.sleep(5000);
+        //sendToLightSensorOnlyNode();
         //
     }
     private void sendToLightSensorOnlyNode(){

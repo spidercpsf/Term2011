@@ -11,6 +11,10 @@ import com.sun.spot.resources.transducers.ITriColorLED;
 import com.sun.spot.resources.transducers.ILightSensor;
 import com.sun.spot.util.IEEEAddress;
 import com.sun.spot.util.Utils;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import javax.microedition.io.*;
 /**
@@ -27,6 +31,9 @@ public class HostConnect{
     String addr;
     public boolean okACK;
     public long sender;
+    DataOutputStream dos=null;
+    ByteArrayOutputStream baos=null;
+    byte code[];
     public HostConnect(int port){
         this.port=port;
         this.port2=port+1;
@@ -40,11 +47,36 @@ public class HostConnect{
             
         }
     }
+    void initSend(long addr,int size,byte[] code) throws IOException{
+        this.code=code;
+        dg.reset();
+        dg.writeLong(addr);
+        if(dos!=null){
+            baos.close();
+            dos.close();
+        }
+        baos= new ByteArrayOutputStream(size);
+        dos=new DataOutputStream(baos);
+    }
     void send2() throws IOException{
+        //encode
+        byte[] data=baos.toByteArray();
+        data=SunSpotApplication.edc.EnCode(code, data);
+        dg.writeInt(data.length);
+        System.out.println("Send msg len="+data.length);
+        dg.write(data);
+        //
         rCon.send(dg);
-        
+        //
     }
     long send() throws IOException {
+        //encode
+        byte[] data=baos.toByteArray();
+        data=SunSpotApplication.edc.EnCode(code, data);
+        dg.writeInt(data.length);
+        System.out.println("Send msg len="+data.length);
+        dg.write(data);
+        //
         okACK=false;
         while(!okACK){
             System.out.println("Send radio data");
@@ -53,17 +85,11 @@ public class HostConnect{
         }
         return sender;
     }
-    void writeByte(byte d) throws IOException{
-        dg.writeByte(d);
-    }
-    void writeInt(int d) throws IOException{
-        dg.writeInt(d);
-    }
-    void reset(){
-        dg.reset();
-    }
-    void writeByteArr(byte[] arr,int off,int len) throws IOException{
-        dg.write(arr, off, len);
+    void sendOK(long addr,byte[] code) throws IOException{
+        System.out.println("SEND OK ACK to " + addr);
+        initSend(addr, 1,code);
+        dos.writeByte((byte) 80); //hello
+        send2();
     }
     public void start(){
         

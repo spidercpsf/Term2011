@@ -40,6 +40,7 @@ public class threadListenLight implements Runnable,defineThreshold{
         int rawVl=0;
         smoothSignal sS= new smoothSignal();
         bitListenner bL= new bitListenner();
+        //bitDetect bD= new bitDetect(3, 40, 60, 14,28,50,9,bL);
         bitDetect bD= new bitDetect(3, 40, 60, 14,26,50,7,bL);
         while(sw1.isOpen()){
             try {
@@ -48,8 +49,11 @@ public class threadListenLight implements Runnable,defineThreshold{
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            //System.out.println(rawVl);
-            bD.addSignal(sS.getData(rawVl));
+            try {
+                bD.addSignal(sS.getData(rawVl));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 }

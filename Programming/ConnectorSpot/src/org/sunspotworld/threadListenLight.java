@@ -29,20 +29,23 @@ public class threadListenLight implements Runnable,defineThreshold{
     private ISwitch sw1 = (ISwitch) Resources.lookup(ISwitch.class, "SW1");
     private ITriColorLED led = leds.getLED(0);
     private ILightSensor lightS = EDemoBoard.getInstance().getLightSensor();
+    public static boolean stopFlag;
     public threadListenLight(){
 
     }
     public void start(){
         runThread= new Thread(this);
         runThread.start();
+        stopFlag=false;
     }
     public void run() {
         int rawVl=0;
+        double l;
         smoothSignal sS= new smoothSignal();
         bitListenner bL= new bitListenner();
         //bitDetect bD= new bitDetect(3, 40, 60, 14,28,50,9,bL);
         bitDetect bD= new bitDetect(3, 40, 60, 14,26,50,7,bL);
-        while(sw1.isOpen()){
+        while(!stopFlag){
             try {
                 rawVl = lightS.getValue();
                 Utils.sleep(speedGetData);
@@ -50,7 +53,9 @@ public class threadListenLight implements Runnable,defineThreshold{
                 ex.printStackTrace();
             }
             try {
-                bD.addSignal(sS.getData(rawVl));
+                l=sS.getData(rawVl);
+                //System.out.println(l);
+                bD.addSignal(l);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }

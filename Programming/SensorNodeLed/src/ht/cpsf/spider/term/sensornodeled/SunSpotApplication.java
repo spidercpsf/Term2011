@@ -60,7 +60,6 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
         RL = new RadioListenner(14);
         RL.start();
         HC= new HostConnect(14);
-        
             System.out.println("This is sensor-node");
             Random rd= new Random(new Date().getTime());
             byte data[]=new byte[14];

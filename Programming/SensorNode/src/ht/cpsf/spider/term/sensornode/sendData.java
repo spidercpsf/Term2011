@@ -17,7 +17,7 @@ import com.sun.spot.util.Utils;
  */
 public class sendData  implements defineThreshold, Runnable{
     ITriColorLEDArray leds ;
-    ITriColorLED    led7;
+    ITriColorLED    led7,led6;
     Queue q= new Queue();
     Queue tmpQ= new Queue();
     crc8 c8= new crc8();
@@ -169,15 +169,20 @@ public class sendData  implements defineThreshold, Runnable{
         }
         //stop
         led7.setRGB(255, 250, 250);
+        led7.setRGB(100, 100, 100);
         //led7.setOff();
         //Utils.sleep(10);
         led7.setOn();
+        led6.setOn();
         Utils.sleep(15 *3);
         led7.setOff();
+        led6.setOff();
         Utils.sleep(20);
         led7.setOn();
+        led6.setOn();
         Utils.sleep(15*6);
         led7.setOff();
+        led6.setOff();
         Utils.sleep(20);
         isSending=false;
     }

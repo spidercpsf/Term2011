@@ -66,7 +66,6 @@ public class sensorDataListenner implements Runnable{
                         System.out.println("MSG for "+ IEEEAddress.toDottedHex(recvAddr));
                         continue;
                     }
-
                     size =  dg.readInt();//read length
                     data= new byte[size];//create new array for store data
                     for(int i=0;i<size;i++) data[i]=dg.readByte();//get data

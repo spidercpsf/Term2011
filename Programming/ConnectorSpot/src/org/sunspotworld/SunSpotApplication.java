@@ -9,8 +9,11 @@ package org.sunspotworld;
 import com.sun.spot.peripheral.radio.RadioFactory;
 import com.sun.spot.resources.Resources;
 import com.sun.spot.resources.transducers.ISwitch;
+import com.sun.spot.resources.transducers.ISwitchListener;
 import com.sun.spot.resources.transducers.ITriColorLED;
 import com.sun.spot.resources.transducers.ITriColorLEDArray;
+import com.sun.spot.resources.transducers.LEDColor;
+import com.sun.spot.resources.transducers.SwitchEvent;
 import com.sun.spot.service.BootloaderListenerService;
 import com.sun.spot.util.IEEEAddress;
 import com.sun.spot.util.Utils;
@@ -42,12 +45,14 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
     int shortAddr= (int) (ourAddr);
 
     //data for send to node to init new node
-    public static long hostAddr;
+    public static long hostAddr=0;
     public static long addrN;
     static byte randomCode[]= new byte[8];
     static byte hostCode[] = new byte[]{14,5,24,64,76,87,54,12};
     //
     protected void startApp() throws MIDletStateChangeException {
+        ISwitch sw1 = (ISwitch) Resources.lookup(ISwitch.class, "SW1");
+        ISwitch sw2 = (ISwitch) Resources.lookup(ISwitch.class, "SW2");
         System.out.println("Node started");
         BootloaderListenerService.getInstance().start();   // monitor the USB (if connected) and recognize commands from host
         String sendAddr= Integer.toBinaryString(shortAddr);
@@ -55,11 +60,11 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
         tLL.start();
         sD.start();
         edc= new EnDeCode(hostCode);
+        System.out.println("This is connector");
+        RL = new RadioListenner(14);
+        RL.start();
+        HC = new HostConnect(14);
             try {
-                System.out.println("This is connector");
-                RL = new RadioListenner(14);
-                RL.start();
-                HC = new HostConnect(14);
                 //send hello packet to HOST
                 HC.initSend(0, 1, hostCode);
                 HC.dos.writeByte((byte)14);//send hello msg
@@ -69,13 +74,38 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+        sw1.addISwitchListener(new ISwitchListener() {
+            public void switchPressed(SwitchEvent evt) {
+            }
+
+            public void switchReleased(SwitchEvent evt) {
+                for(int i=0;i<8;i++){
+                    leds.getLED(i).setColor(LEDColor.BLUE);
+                    leds.getLED(i).setOn();
+                    Utils.sleep(500);
+                }
+                for(int i=0;i<8;i++){
+                    leds.getLED(i).setOff();
+                }
+                sendToLightSensorOnlyNode();
+            }
+        });
+        sw2.addISwitchListener(new ISwitchListener() {
+
+            public void switchPressed(SwitchEvent evt) {
+            }
+
+            public void switchReleased(SwitchEvent evt) {
+                sD.tmpQ.empty();
+            }
+        });
         //tmp for send data to light sensor only node
         //Utils.sleep(5000);
         //sendToLightSensorOnlyNode();
         //
     }
     private void sendToLightSensorOnlyNode(){
-            System.out.println("This is sensor-node");
+            System.out.println("This is connector-node");
             Random rd= new Random(new Date().getTime());
             byte data[]=new byte[14];
             data[0]=0;

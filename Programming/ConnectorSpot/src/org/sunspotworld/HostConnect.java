@@ -59,15 +59,16 @@ public class HostConnect{
         dos=new DataOutputStream(baos);
     }
     void send2() throws IOException{
-        //encode
         byte[] data=baos.toByteArray();
         data=SunSpotApplication.edc.EnCode(code, data);
         dg.writeInt(data.length);
         System.out.println("Send msg len="+data.length);
         dg.write(data);
         //
-        rCon.send(dg);
-        //
+        {
+            System.out.println("Send radio data");
+            rCon.send(dg);
+        }
     }
     long send() throws IOException {
         //encode

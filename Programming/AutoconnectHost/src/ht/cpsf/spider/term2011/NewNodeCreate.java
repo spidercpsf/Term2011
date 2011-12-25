@@ -76,7 +76,7 @@ public class NewNodeCreate implements Runnable{
                     String addr = dg.getAddress();  // read sender's Id
                     //long time = dg.readLong();      // read time of the reading
                     recvAddr= dg.readLong();//get addr
-                    System.out.println(IEEEAddress.toDottedHex(recvAddr));
+                    //System.out.println(IEEEAddress.toDottedHex(recvAddr));
                     if(recvAddr!=0 && recvAddr!= SunSpotHostApplication.ourAddr ){
                         System.out.println("MSG for "+ IEEEAddress.toDottedHex(recvAddr));
                         continue;
@@ -102,9 +102,14 @@ public class NewNodeCreate implements Runnable{
                     }*/
                     switch (val){
                         case (byte) 0:
-                            System.out.println("Log:"+dis.readDouble()+" "+dis.readDouble());
+                            System.out.println("****Log:"+dis.readDouble()+" "+dis.readDouble());
                             break;
-
+                        case (byte) 1:
+                            System.out.println("****Recv:"+dis.readInt());
+                            break;
+                        case (byte) 2:
+                            System.out.println("****MAXMIN:"+dis.readDouble()+"   min="+dis.readDouble()+" # minmax"+dis.readDouble()+" ** "+dis.readDouble());
+                            break;
                         case (byte)14:
                             System.out.println("Hello messenger from connector");
                             if(!connectorAddr.equals(addr)){
@@ -132,19 +137,13 @@ public class NewNodeCreate implements Runnable{
                             }
                             //read data from MSG
                             addrFull=dis.readLong();//read ADDR of new Node
-                            for(int i=0;i<8;i++) randomCode[i]=dg.readByte();
+                            System.out.println(IEEEAddress.toDottedHex(addrFull));
+                            for(int i=0;i<8;i++) {
+                                System.out.println(i);
+                                randomCode[i]=dis.readByte();
+                            }
                             //add to list node
                             SunSpotHostApplication.nM.addNode(IEEEAddress.toDottedHex(addrFull),randomCode);
-                            //
-                            System.out.println("Sendding Hellomsg to Connector..");
-                            dgOut.reset();
-                            dgOut.writeLong(IEEEAddress.toLong(addr));
-                            dt = SunSpotHostApplication.edc.EnCode(SunSpotHostApplication.key,new byte[]{80});
-                            dgOut.writeInt(dt.length);
-                            dgOut.write(dt);
-                            rConOut.send(dgOut);
-                            //
-                            
                             break;
                         case (byte)161:// -> tempory code to connect to node (node havent light sensor,only LED)
                             System.out.println("Code=161:to connect to node (node havent light sensor,only LED)");

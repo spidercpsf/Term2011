@@ -17,7 +17,7 @@ import com.sun.spot.util.Utils;
  */
 public class sendData  implements defineThreshold, Runnable{
     ITriColorLEDArray leds ;
-    ITriColorLED    led7,led6;
+    ITriColorLED    led7;
     Queue q= new Queue();
     Queue tmpQ= new Queue();
     crc8 c8= new crc8();
@@ -42,9 +42,9 @@ public class sendData  implements defineThreshold, Runnable{
     public sendData(){
         leds = (ITriColorLEDArray) Resources.lookup(ITriColorLEDArray.class);
         led7= leds.getLED(7);
-        led6= leds.getLED(6);
+        
         led7.setRGB(0, 100, 0);
-        led6.setRGB(0, 100, 0);
+        
     }
     public void run() {
         byte[] data;
@@ -124,72 +124,12 @@ public class sendData  implements defineThreshold, Runnable{
         Utils.sleep(20);
         issenFALSE=false;
     }
-    public void send(String binaryChar){
-        isSending=true;
-        //start lights
-        led7.setRGB(255, 250, 250);
-        led7.setOn();
-        Utils.sleep(15*6);
-        led7.setOff();
-        Utils.sleep(20);
-        led7.setOn();
-        Utils.sleep(15*3);
-        led7.setOff();
-        Utils.sleep(60);
-        //start lights
-        led7.setOn();
-        Utils.sleep(15*6);
-        led7.setOff();
-        Utils.sleep(20);
-        led7.setOn();
-        Utils.sleep(15*3);
-        led7.setOff();
-        Utils.sleep(20);
-        //send data
-
-        for(int i=0;i<binaryChar.length();i++){
-
-            if(binaryChar.charAt(i)=='1'){
-                led7.setRGB(250, 250, 250);
-                led7.setOn();
-                Utils.sleep(speedSendData);
-                led7.setOff();
-                //if(i+1<binaryChar.length()&&binaryChar.charAt(i+1)=='1')Utils.sleep(speedSendData2*3/2);
-                //else
-                Utils.sleep(speedSendData2);
-                //System.out.println("1");
-            }else if(binaryChar.charAt(i)=='0'){
-                led7.setRGB(50, 40, 0);
-                led7.setOn();
-                Utils.sleep(speedSendData2);
-                led7.setOff();
-                Utils.sleep(speedSendData);
-                //System.out.println("0");
-            }
-
-
-        }
-        //stop
-        led7.setRGB(255, 250, 250);
-        //led7.setOff();
-        //Utils.sleep(10);
-        led7.setOn();
-        Utils.sleep(15 *3);
-        led7.setOff();
-        Utils.sleep(20);
-        led7.setOn();
-        Utils.sleep(15*6);
-        led7.setOff();
-        Utils.sleep(20);
-        isSending=false;
-    }
     public void send(byte[] byteArr){
         isSending=true;
         int tmp2;
         char tmp;
-
         //start lights
-        led7.setRGB(255, 250, 250);
+        led7.setRGB(250, 250, 250);
         led7.setOn();
         Utils.sleep(15*6);
         led7.setOff();
@@ -197,16 +137,18 @@ public class sendData  implements defineThreshold, Runnable{
         led7.setOn();
         Utils.sleep(15*3);
         led7.setOff();
-        Utils.sleep(30);
+        Utils.sleep(50);
+        //send data
         //start lights
+        led7.setRGB(250, 250, 250);
         led7.setOn();
-        Utils.sleep(15*8);
+        Utils.sleep(15*6);
         led7.setOff();
         Utils.sleep(20);
         led7.setOn();
         Utils.sleep(15*3);
         led7.setOff();
-        Utils.sleep(20);
+        Utils.sleep(50);
         //send data
         for(int i=0;i<byteArr.length;i++){
             if(issenOK){

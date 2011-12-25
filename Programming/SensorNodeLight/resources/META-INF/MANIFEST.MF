@@ -2,6 +2,6 @@ MIDlet-Name: SensorNodeLight
 MIDlet-Version: 1.0.0
 MIDlet-Vendor: Your Organization
 MIDlet-Description: Sample Sun SPOT Application
-MIDlet-1: SunSpotApplication, , ht.cpsf.spider.term.sensornodeledlight.SunSpotApplication
+MIDlet-1: SunSpotApplication, , ht.cpsf.spider.term.sensornodelight.SunSpotApplication
 MicroEdition-Profile: IMP-1.0
 MicroEdition-Configuration: CLDC-1.1

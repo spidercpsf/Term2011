@@ -88,8 +88,13 @@ public class RadioListenner implements  Runnable{
                         System.out.println("Recv data for commucation: addrHost=" + IEEEAddress.toDottedHex(SunSpotApplication.hostAddr));
                         SunSpotApplication.HC.sendOK(IEEEAddress.toLong(addr),SunSpotApplication.randomCode);//send OK ACK
                         SunSpotApplication.sD.tmpQ.empty();
+                        break;
+                    case (byte) 80://recv okack -> set
+                        System.out.println("OKACK");
+                        SunSpotApplication.HC.sender= IEEEAddress.toLong(dg.getAddress());
+                        SunSpotApplication.HC.okACK=true;
+                        break;
                 }
-                break;
             } catch (IOException ex) {
                 ex.printStackTrace();
             }

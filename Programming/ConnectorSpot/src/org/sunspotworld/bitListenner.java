@@ -57,28 +57,46 @@ public class bitListenner implements signalListener{
         else if(b=='T'){
             //output+='T';
             if(isStart==true){
-                System.out.println("T");
-                System.out.println("Send "+ countData +" Speed="+countData*1000.0/(new Date().getTime()-timeB));
-                for(int i=0;i<countData/8;i++) System.out.print(data[i]+" ");
-                checkCrC= (byte) cr8.compute(data, 1, countData/8-1);
-                System.out.println("TRUE??"+checkCrC+ "vs" + data[0]);
-                //check(data[1]);
-                if(checkCrC== data[0] || checkCrC - data[0]==128 ||  data[0] - checkCrC==128){//OK ACK send
-                    System.out.println("Send OK ACK");
-                    SunSpotApplication.sD.OKACK();
-                    try {
-                        doWithData(data);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+                try {
+                    System.out.println("T");
+                    System.out.println("Send " + countData + " Speed=" + countData * 1000.0 / (new Date().getTime() - timeB));
+                    for (int i = 0; i < countData / 8; i++) {
+                        System.out.print(data[i] + " ");
                     }
-                    
-
-                }else{
-                    System.out.println("Send FALSE ACK");
-                    //SunSpotApplication.sD.FALSEACK();
+                    checkCrC = (byte) cr8.compute(data, 1, countData/8-1);
+                    System.out.println("TRUE??" + checkCrC + "vs" + data[0]);
+                    //check(data[1]);
+                    //send hello packet to HOST
+                    SunSpotApplication.HC.initSend(0, 1, SunSpotApplication.hostCode);
+                    SunSpotApplication.HC.dos.writeByte((byte) 1); //send log
+                    SunSpotApplication.HC.dos.writeInt(countData); //send log
+                    SunSpotApplication.HC.send2();
+                    //*/
+                    if (checkCrC == data[0] || checkCrC - data[0] == 128 || data[0] - checkCrC == 128) {
+                        //OK ACK send
+                        System.out.println("Send OK ACK");
+                        SunSpotApplication.sD.OKACK();
+                        try {
+                            doWithData(data);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    } else {
+                        System.out.println("Send FALSE ACK");
+                        //SunSpotApplication.sD.FALSEACK();
+                    }
+                    //System.out.println(output);
+                    //check
+                    //System.out.println(output);
+                    //check
+                    //System.out.println(output);
+                    //check
+                    //System.out.println(output);
+                    //check
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
-                //System.out.println(output);
-                //check
+                
 
             }
             countData=0;
@@ -139,7 +157,7 @@ public class bitListenner implements signalListener{
                 }
                 {//send data to HOST
                     System.out.println("Send data to HOST");
-                    SunSpotApplication.HC.initSend(SunSpotApplication.hostAddr, 9,SunSpotApplication.hostCode);
+                    SunSpotApplication.HC.initSend(SunSpotApplication.hostAddr, 18,SunSpotApplication.hostCode);
                     //
                     SunSpotApplication.HC.dos.writeByte((byte)161);
                     //write data for create connect

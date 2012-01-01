@@ -37,13 +37,6 @@ public class GUIPanel extends JPanel{
         for(int i=0;i<listNode.size();i++){
             listNode.get(i).draw(g,getWidth(),getHeight());
         }
-        //repaint
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(GUIPanel.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        repaint();
         System.out.println("aa");
     }
     public void repain(){

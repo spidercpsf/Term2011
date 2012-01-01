@@ -48,6 +48,7 @@ public class bitListenner implements signalListener{
 
         if(b=='S'){
             //output="S";
+            SunSpotApplication.recvLight=true;
             isStart=true;
             System.out.println("DATA:");
             System.out.print("S");
@@ -70,9 +71,12 @@ public class bitListenner implements signalListener{
                     SunSpotApplication.HC.initSend(0, 1, SunSpotApplication.hostCode);
                     SunSpotApplication.HC.dos.writeByte((byte) 1); //send log
                     SunSpotApplication.HC.dos.writeInt(countData); //send log
+                    if (checkCrC == data[0] || checkCrC - data[0] == 128 || data[0] - checkCrC == 128) SunSpotApplication.HC.dos.writeBoolean(true);
+                    else SunSpotApplication.HC.dos.writeBoolean(false);
                     SunSpotApplication.HC.send2();
                     //*/
                     if (checkCrC == data[0] || checkCrC - data[0] == 128 || data[0] - checkCrC == 128) {
+
                         //OK ACK send
                         System.out.println("Send OK ACK");
                         SunSpotApplication.sD.OKACK();
@@ -85,6 +89,7 @@ public class bitListenner implements signalListener{
                         System.out.println("Send FALSE ACK");
                         //SunSpotApplication.sD.FALSEACK();
                     }
+                    
                     //System.out.println(output);
                     //check
                     //System.out.println(output);
@@ -169,6 +174,7 @@ public class bitListenner implements signalListener{
                 for(i=0;i<8;i++) {
                     SunSpotApplication.leds.getLED(i).setOff();
                 }
+                SunSpotApplication.blinkLED();
                 break;
             case (byte) 85:
                 System.out.println("Hello Packet\n");

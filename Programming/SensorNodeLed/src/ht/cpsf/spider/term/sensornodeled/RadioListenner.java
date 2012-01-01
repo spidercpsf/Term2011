@@ -70,10 +70,11 @@ public class RadioListenner implements  Runnable{
                     //encode and check
                 } //get data
                 //encode and check
-                if (!edc.checkCode(IEEEAddress.toLong(addr),data)) {//check data from addr Node
+                data = edc.DeCode(IEEEAddress.toLong(addr),data);
+                if (data==null) {//check data from addr Node
                     continue;
                 }
-                data = edc.DeCode(IEEEAddress.toLong(addr),data);
+                
                 dis = new DataInputStream(new ByteArrayInputStream(data));
                 //
                 int val = dis.readByte(); // read the sensor value
@@ -88,6 +89,15 @@ public class RadioListenner implements  Runnable{
                         System.out.println("Recv data for commucation: addrHost=" + IEEEAddress.toDottedHex(SunSpotApplication.hostAddr));
                         SunSpotApplication.HC.sendOK(IEEEAddress.toLong(addr),SunSpotApplication.randomCode);//send OK ACK
                         SunSpotApplication.sD.tmpQ.empty();
+                        SunSpotApplication.isConfig=true;
+                        break;
+                     case (byte) 142://code for create connect
+                        System.out.println("REQUEST CONNECT TRUE CODE");
+                        SunSpotApplication.hostAddr= IEEEAddress.toLong(addr);
+                        SunSpotApplication.HC.initSend(IEEEAddress.toLong(addr), 12, SunSpotApplication.randomCode); //after replace randomCode with true Code
+                        SunSpotApplication.HC.dos.writeByte((byte)143);
+                        SunSpotApplication.HC.send2();
+                        SunSpotApplication.isConfig=true;
                         break;
                     case (byte) 80://recv okack -> set
                         System.out.println("OKACK");

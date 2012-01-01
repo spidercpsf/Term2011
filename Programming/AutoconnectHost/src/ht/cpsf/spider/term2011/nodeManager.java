@@ -34,9 +34,12 @@ public class nodeManager {
      */
     public int addNode(String ID,byte[] code,int x,int y){
         int i;
+        SunSpotHostApplication.gF.statusLB.setText("Add node "+ ID +" at "+x+" "+y);
         System.out.println("Add node "+ ID +" at "+x+" "+y);
         System.out.print("  key:");for(i=0;i<8;i++) System.out.print(code[i]+ " ");System.out.println();
         for(i=0;i<listNode.size();i++) if(listNode.get(i).ID.equals(ID)){
+            for(int j=0;j<code.length;j++) listNode.get(i).code[j]=code[j];
+            SunSpotHostApplication.gF.statusLB.setText("Update node "+ ID);
             System.out.println("Already have "+ID);
             return 1;
         }
@@ -72,7 +75,7 @@ public class nodeManager {
         int i;
         for(i=0;i<listNode.size();i++) if(listNode.get(i).ID.equals(ID)){
             listNode.get(i).update(data);
-
+            
             return 0;
         }
         System.out.println("Cant find "+ID);

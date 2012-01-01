@@ -71,12 +71,14 @@ public class sensorDataListenner implements Runnable{
                     for(int i=0;i<size;i++) data[i]=dg.readByte();//get data
                     System.out.println("from: " + addr + "   Size = " + size);
                     //encode and check
-                    if(!SunSpotHostApplication.edc.checkCode(SunSpotHostApplication.nM.getNode(addr).code,data)){
+                    //encode and check
+                    if(SunSpotHostApplication.nM.getNode(addr)==null) continue;;
+                    data=SunSpotHostApplication.edc.DeCode(SunSpotHostApplication.nM.getNode(addr).code, data);
+                    if(data==null){
                         continue;
                     }
                     //System.out.println(SunSpotHostApplication.NM.checkNodeAddr(addr)+ " DATASENSOR from: " + addr);
                     //if(SunSpotHostApplication.NM.checkNodeAddr(addr)){
-                     data=SunSpotHostApplication.edc.DeCode(SunSpotHostApplication.nM.getNode(addr).code, data);
                      SunSpotHostApplication.nM.updateNode(addr,data);
                     //}
                     dg.reset();

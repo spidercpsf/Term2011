@@ -172,7 +172,7 @@ public class sendData  implements defineThreshold, Runnable{
                         //else
                         Utils.sleep(speedSendData2);
                 }else if(tmp==0){
-                        led7.setRGB(50, 40, 0);
+                        led7.setRGB(50, 0, 0);
                         led7.setOn();
                         Utils.sleep(speedSendData2);
                         led7.setOff();

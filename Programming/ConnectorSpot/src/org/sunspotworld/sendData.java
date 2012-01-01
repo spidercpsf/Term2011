@@ -26,7 +26,7 @@ public class sendData  implements defineThreshold, Runnable{
     boolean issenFALSE=false;
     Thread runThread;
     boolean stopFlag;
-
+    private char numLoop;
     public boolean checkFin(){
         if(q.isEmpty()&&tmpQ.isEmpty()) return true;
         return false;
@@ -39,22 +39,27 @@ public class sendData  implements defineThreshold, Runnable{
     public void stop(){
         stopFlag=true;
     }
-    public sendData(){
+    public sendData(char numLoop){
         leds = (ITriColorLEDArray) Resources.lookup(ITriColorLEDArray.class);
         led7= leds.getLED(7);
-
         led7.setRGB(0, 100, 0);
+        this.numLoop=numLoop;
 
     }
     public void run() {
         byte[] data;
+        char count = 0;
         while(!stopFlag){
             //System.out.println("Wait 1s");
             Utils.sleep(2000);//2s is time out
             if(tmpQ.isEmpty()&&!q.isEmpty()){
                 tmpQ.put(q.get());
+                count=0;
             }
+            count++;
+            if(count>=numLoop) tmpQ.empty();
             if(!tmpQ.isEmpty()&&!isSending){//if not empty
+                
                 data= (byte[]) tmpQ.get();
                 tmpQ.put(data);
                 System.out.print("Send:");
@@ -172,7 +177,7 @@ public class sendData  implements defineThreshold, Runnable{
                         //else
                         Utils.sleep(speedSendData2);
                 }else if(tmp==0){
-                        led7.setRGB(50, 40, 0);
+                        led7.setRGB(50, 0, 0);
                         led7.setOn();
                         Utils.sleep(speedSendData2);
                         led7.setOff();

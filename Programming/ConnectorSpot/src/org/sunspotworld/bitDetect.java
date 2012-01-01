@@ -16,7 +16,8 @@ public class bitDetect {
                 //status =1 -> couting value and calc max signal
     double thresholdStatus;
     double threshold01_0,threshold01_1;
-    double thresholdLen01;
+    double threshold01;
+
     signalListener listener;
     //
     double max=0;
@@ -55,7 +56,7 @@ public class bitDetect {
         this.lenSS0=lenSS0;
         this.lenSS1=lenSS1;
         this.lenSS2=lenSS2;
-        this.thresholdLen01=thresholdLen01;
+
 
     }
 
@@ -65,7 +66,7 @@ public class bitDetect {
         if(value<thresholdStatus){
             if(status==1){
                 id+=1;
-                if(preBit==1&&preLen>=lenSS0&&max>threshold01_1&&count1>=lenSS0){
+                if(preBit==1&&preLen>=lenSS0&&max*2.0/count1 >  threshold01&&count1>=lenSS0){
                     if(count1>=lenSS1&&preLen<lenSS1&&count1<lenSS2){//stop
                         System.out.println("STOP ACK:"+preLen+" "+count1+" idCount="+id);
                         listener.newBit('T');
@@ -90,15 +91,16 @@ public class bitDetect {
                         xLight=(sum/count1)/136;
                         if(xLight<0.85)xLight=0.85;
                         if(xLight>1.2)xLight=1.2;
-
+                        threshold01=-6.3+(sum/count1)/12.5;
                         System.out.println("Avg="+(sum/count1)+" ->*="+xLight);
                         //send hello packet to HOST
                             SunSpotApplication.HC.initSend(0, 1, SunSpotApplication.hostCode);
                             SunSpotApplication.HC.dos.writeByte((byte)0);//send log
                             SunSpotApplication.HC.dos.writeDouble(sum/count1);//send log
-                            SunSpotApplication.HC.dos.writeDouble(xLight);//send log
+                            SunSpotApplication.HC.dos.writeDouble(threshold01);//send log
                             SunSpotApplication.HC.send2();
                         //
+                        threshold01=7;
                         preBit=0;
                         preLen=0;
                         count1=0;
@@ -112,7 +114,7 @@ public class bitDetect {
                         //
                         sum=0;
                         
-                        System.out.println("Env:"+status+" "+thresholdStatus+" "+threshold01_0+" "+threshold01_1+" "+thresholdLen01+" "+max+" "+preBit+" "+count0+" "+count1+" "+lenSS0+" "+lenSS1+" "+lenSS2+" "+id);
+                        System.out.println("Env:"+status+" "+thresholdStatus+" "+threshold01_0+" "+threshold01_1+" "+max+" "+preBit+" "+count0+" "+count1+" "+lenSS0+" "+lenSS1+" "+lenSS2+" "+id);
                         return;
                     }else if(preLen<lenSS1&&count1<lenSS1){//OK ACK
                         listener.newBit('O');
@@ -155,7 +157,7 @@ public class bitDetect {
                                  preBit=1;
                             }
                         }*/
-                        if(max*1.0/count1 >  11){
+                        if(max*1.0/count1 >  threshold01){
                             listener.newBit('1');
                                 preBit=1;
                         }else{

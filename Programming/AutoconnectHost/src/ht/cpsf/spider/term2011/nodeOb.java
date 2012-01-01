@@ -22,8 +22,10 @@ public class nodeOb {
     int weight,height;
     Date lastUpdate;
     byte[] code;
-    public nodeOb(String ID,byte[] code,int x,int y,int weight,int height){
+    public nodeOb(String ID,byte[] code2,int x,int y,int weight,int height){
         this.ID=ID;
+        this.code= new byte[code2.length];
+        for(int i=0;i<code2.length;i++)this.code[i]=code2[i];
         this.code=code;
         this.x=x;
         this.y=y;

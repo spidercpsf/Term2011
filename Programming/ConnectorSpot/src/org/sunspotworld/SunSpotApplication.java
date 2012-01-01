@@ -36,19 +36,22 @@ import javax.microedition.midlet.MIDletStateChangeException;
  */
 public  class SunSpotApplication extends MIDlet implements defineThreshold{
     public static EnDeCode edc;
-    public static sendData sD= new sendData();
+    public static sendData sD= new sendData((char)6);
     public static threadListenLight tLL= new threadListenLight();
     public static HostConnect HC=null;
     public static RadioListenner RL= null;
     public static ITriColorLEDArray   leds = (ITriColorLEDArray) Resources.lookup(ITriColorLEDArray.class);
     public static long ourAddr = RadioFactory.getRadioPolicyManager().getIEEEAddress();
     int shortAddr= (int) (ourAddr);
-
+    static boolean recvLight=false;
+    static boolean isPushed=false;
     //data for send to node to init new node
     public static long hostAddr=0;
     public static long addrN;
     static byte randomCode[]= new byte[8];
     static byte hostCode[] = new byte[]{14,5,24,64,76,87,54,12};
+
+
     //
     protected void startApp() throws MIDletStateChangeException {
         ISwitch sw1 = (ISwitch) Resources.lookup(ISwitch.class, "SW1");
@@ -63,6 +66,12 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
         System.out.println("This is connector");
         RL = new RadioListenner(14);
         RL.start();
+        //
+        byte[] data= edc.EnCode(new byte[]{1,2,3,4,5,6,7,8}, new byte[]{14,12});
+        byte[] deData= edc.DeCode(new byte[]{1,2,3,4,5,6,7,8}, data);
+        if(deData==null) System.out.println("False");
+        else System.out.println(deData[0]+" "+deData[1]);
+        //
         HC = new HostConnect(14);
             try {
                 //send hello packet to HOST
@@ -74,20 +83,28 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+
         sw1.addISwitchListener(new ISwitchListener() {
             public void switchPressed(SwitchEvent evt) {
+                recvLight=false;
+                if(!isPushed){
+                    isPushed=true;
+                    for(int i=0;i<8;i++){
+                        leds.getLED(i).setRGB(0, 20, 0);
+                        if(i>0) leds.getLED(i-1).setOff();
+                        leds.getLED(i).setOn();
+                        Utils.sleep(1000);
+                    }
+                    for(int i=0;i<8;i++){
+                        leds.getLED(i).setOff();
+                    }
+                    if(recvLight==false)sendToLightSensorOnlyNode();
+                    Utils.sleep(3000);
+                    isPushed=false;
+                }
             }
-
             public void switchReleased(SwitchEvent evt) {
-                for(int i=0;i<8;i++){
-                    leds.getLED(i).setColor(LEDColor.BLUE);
-                    leds.getLED(i).setOn();
-                    Utils.sleep(500);
-                }
-                for(int i=0;i<8;i++){
-                    leds.getLED(i).setOff();
-                }
-                sendToLightSensorOnlyNode();
+                
             }
         });
         sw2.addISwitchListener(new ISwitchListener() {
@@ -128,5 +145,20 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
      * @param unconditional If true the MIDlet must cleanup and release all resources.
      */
     protected void destroyApp(boolean unconditional) throws MIDletStateChangeException {
+    }
+    public static void blinkLED(){
+        for(int j=0;j<4;j++){
+                    //sendding data
+                    Utils.sleep(500);
+                    for(int i=0;i<8;i++){
+                        leds.setRGB(0, 20, 0);
+                        leds.getLED(i).setOn();
+                    }
+                    Utils.sleep(500);
+                    for(int i=0;i<8;i++){
+                        leds.getLED(i).setOff();
+                    }
+        }
+
     }
 }

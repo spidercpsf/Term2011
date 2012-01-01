@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.microedition.io.*;
+import javax.swing.JOptionPane;
 /**
  *
  * @author cpsf
@@ -78,19 +79,22 @@ public class NewNodeCreate implements Runnable{
                     recvAddr= dg.readLong();//get addr
                     //System.out.println(IEEEAddress.toDottedHex(recvAddr));
                     if(recvAddr!=0 && recvAddr!= SunSpotHostApplication.ourAddr ){
-                        System.out.println("MSG for "+ IEEEAddress.toDottedHex(recvAddr));
+                        System.out.println("MSG for "+recvAddr+" => "+ IEEEAddress.toDottedHex(recvAddr));
+                        if(recvAddr==1412){//msg HELLO from sensor
+                            System.out.println("New node hello");
+                            SunSpotHostApplication.gCNM.addAddr(addr);
+                        }
                         continue;
                     }
-
                     size =  dg.readInt();//read length
                     data= new byte[size];//create new array for store data
                     for(int i=0;i<size;i++) data[i]=dg.readByte();//get data
                     System.out.println("from: " + addr + "   Size = " + size);
                     //encode and check
-                    if(!SunSpotHostApplication.edc.checkCode(SunSpotHostApplication.key,data)){
+                    data=SunSpotHostApplication.edc.DeCode(IEEEAddress.toLong(addr),data);
+                    if(data==null){
                         continue;
                     }
-                    data= SunSpotHostApplication.edc.DeCode(SunSpotHostApplication.key,data);
                     System.out.println("Size of pack:"+data.length);
                     dis = new DataInputStream(new ByteArrayInputStream(data));
                     //
@@ -102,13 +106,13 @@ public class NewNodeCreate implements Runnable{
                     }*/
                     switch (val){
                         case (byte) 0:
-                            System.out.println("****Log:"+dis.readDouble()+" "+dis.readDouble());
+                            System.out.println("**********************************Log:"+dis.readDouble()+" "+dis.readDouble());
                             break;
                         case (byte) 1:
-                            System.out.println("****Recv:"+dis.readInt());
+                            System.out.println("**********************************Recv:"+dis.readInt()+ " Status:"+dis.readBoolean());
                             break;
                         case (byte) 2:
-                            System.out.println("****MAXMIN:"+dis.readDouble()+"   min="+dis.readDouble()+" # minmax"+dis.readDouble()+" ** "+dis.readDouble());
+                            System.out.println("**********************************MAXMIN:"+dis.readDouble()+"   min="+dis.readDouble()+" # minmax"+dis.readDouble()+" ** "+dis.readDouble());
                             break;
                         case (byte)14:
                             System.out.println("Hello messenger from connector");
@@ -127,6 +131,7 @@ public class NewNodeCreate implements Runnable{
                             dgOut.write(dt);
                             rConOut.send(dgOut);
                             //
+                            SunSpotHostApplication.gF.connectorTime= new Date();
                             break;
                         case (byte)162:// -> tempory code to connect to node (node havent light sensor,only LED)
                             System.out.println("Code=161:to connect to node (node have only light sensor)");
@@ -167,6 +172,13 @@ public class NewNodeCreate implements Runnable{
                             rConOut.send(dgOut);
                             //
                             
+                            break;
+                        case (byte) 143://ok ack for create new node with manual input
+                            if(IEEEAddress.toLong(addr)==(SunSpotHostApplication.gCNM.addrN)) {
+                                SunSpotHostApplication.nM.addNode(addr,SunSpotHostApplication.gCNM.randomCode);
+                                JOptionPane.showConfirmDialog(null, "Connect to "+ addr +" finish!");
+                            }
+
                             break;
                 }
                 }catch(TimeoutException e){

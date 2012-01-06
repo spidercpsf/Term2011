@@ -109,7 +109,11 @@ public class NewNodeCreate implements Runnable{
                             System.out.println("**********************************Log:"+dis.readDouble()+" "+dis.readDouble());
                             break;
                         case (byte) 1:
-                            System.out.println("**********************************Recv:"+dis.readInt()+ " Status:"+dis.readBoolean());
+                            int len=dis.readInt();
+                            boolean st= dis.readBoolean();
+
+                            if(len> 0 )System.out.println("**********************************Recv:"+len+ " Status:"+st);
+                            else System.out.println("**************AUTO FIX********************Recv:"+len+ " Status:"+st);
                             break;
                         case (byte) 2:
                             System.out.println("**********************************MAXMIN:"+dis.readDouble()+"   min="+dis.readDouble()+" # minmax"+dis.readDouble()+" ** "+dis.readDouble());

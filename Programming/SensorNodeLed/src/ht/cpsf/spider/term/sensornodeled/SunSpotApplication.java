@@ -84,6 +84,7 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
             }
             public void switchReleased(SwitchEvent evt) {
                 isConfig=false;
+                SunSpotApplication.sD.q.empty();
                 SunSpotApplication.sD.tmpQ.empty();//switch to manual mode
                 //init randomCode
                 //create byte array of code
@@ -112,6 +113,12 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
                 }
                 //
                 //
+                for(int i=0;i<8;i++){
+                        leds.getLED(i).setRGB(0, 20, 0);
+                        if(i>0) leds.getLED(i-1).setOff();
+                        leds.getLED(i).setOn();
+                        Utils.sleep(1000);
+                }
             }
         });
         //
@@ -136,12 +143,12 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
         while(true){//sendding data
                 try {
                     //sendding data
-                    Utils.sleep(500);
+                    Utils.sleep(1500);
                     for(int i=0;i<8;i++){
 
                         leds.getLED(i).setOn();
                     }
-                    Utils.sleep(500);
+                    Utils.sleep(1500);
                     for(int i=0;i<8;i++){
                         leds.getLED(i).setOff();
                     }

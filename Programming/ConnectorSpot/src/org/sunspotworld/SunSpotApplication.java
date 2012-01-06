@@ -89,13 +89,13 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
                 recvLight=false;
                 if(!isPushed){
                     isPushed=true;
-                    for(int i=0;i<8;i++){
-                        leds.getLED(i).setRGB(0, 20, 0);
+                    for(int i=4;i<8;i++){
+                        leds.getLED(i).setRGB(0, 100, 0);
                         if(i>0) leds.getLED(i-1).setOff();
                         leds.getLED(i).setOn();
-                        Utils.sleep(1000);
+                        Utils.sleep(2000);
                     }
-                    for(int i=0;i<8;i++){
+                    for(int i=4;i<8;i++){
                         leds.getLED(i).setOff();
                     }
                     if(recvLight==false)sendToLightSensorOnlyNode();
@@ -146,19 +146,21 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
      */
     protected void destroyApp(boolean unconditional) throws MIDletStateChangeException {
     }
-    public static void blinkLED(){
-        for(int j=0;j<4;j++){
+    public static void blinkLED(LEDColor cl){
+        //
+        SunSpotApplication.leds.getLED(3).setColor(cl);
+        SunSpotApplication.leds.getLED(4).setColor(cl);
+        //
+        for(int j=0;j<2;j++){
                     //sendding data
-                    Utils.sleep(500);
-                    for(int i=0;i<8;i++){
-                        leds.setRGB(0, 20, 0);
+                    Utils.sleep(300);
+                    for(int i=3;i<5;i++){
                         leds.getLED(i).setOn();
                     }
-                    Utils.sleep(500);
-                    for(int i=0;i<8;i++){
+                    Utils.sleep(300);
+                    for(int i=3;i<5;i++){
                         leds.getLED(i).setOff();
                     }
         }
-
     }
 }

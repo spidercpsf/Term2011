@@ -147,7 +147,7 @@ public class sendData  implements defineThreshold, Runnable{
         //start lights
         led7.setRGB(250, 250, 250);
         led7.setOn();
-        Utils.sleep(15*6);
+        Utils.sleep(15*7);
         led7.setOff();
         Utils.sleep(20);
         led7.setOn();

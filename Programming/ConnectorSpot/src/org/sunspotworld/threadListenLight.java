@@ -31,20 +31,33 @@ public class threadListenLight implements Runnable,defineThreshold{
     private ILightSensor lightS = EDemoBoard.getInstance().getLightSensor();
     public static boolean stopFlag;
     public threadListenLight(){
-
+        
+        stopFlag=true;
     }
     public void start(){
-        runThread= new Thread(this);
-        runThread.start();
-        stopFlag=false;
+        
+        if(stopFlag==true){
+            runThread= new Thread(this);
+            runThread.start();
+            stopFlag=false;
+        }
+        
+    }
+    public void stop(){
+        if(stopFlag==false){
+            stopFlag=true;
+            
+        }
     }
     public void run() {
+        System.out.println("Start thread light");
         int rawVl=0;
         double l;
         smoothSignal sS= new smoothSignal();
         bitListenner bL= new bitListenner();
         //bitDetect bD= new bitDetect(3, 40, 60, 14,28,50,9,bL);
-        bitDetect bD= new bitDetect(3, 40, 60, 14,26,50,7,bL);
+        bitDetect bD= new bitDetect(3, 40, 60, 14,22,50,7,bL);
+
         while(!stopFlag){
             try {
                 rawVl = lightS.getValue();
@@ -60,5 +73,6 @@ public class threadListenLight implements Runnable,defineThreshold{
                 ex.printStackTrace();
             }
         }
+        System.out.println("End thread light");
     }
 }

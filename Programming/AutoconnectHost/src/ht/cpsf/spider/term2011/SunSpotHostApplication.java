@@ -44,7 +44,7 @@ public class SunSpotHostApplication {
      * Print out our radio address.
      */
     public void run() throws IOException, NoSuchAlgorithmException {
-
+        
         byte[] data= edc.EnCode(new byte[]{1,2,3,4,5,6,7,8}, new byte[]{14,12});
         byte[] deData= edc.DeCode(new byte[]{1,2,3,4,5,6,7,8}, data);
         if(deData==null) System.out.println("False");

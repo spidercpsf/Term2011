@@ -7,6 +7,7 @@ package org.sunspotworld;
 
 import com.sun.spot.resources.transducers.LEDColor;
 import com.sun.spot.util.IEEEAddress;
+import com.sun.spot.util.Utils;
 import java.io.IOException;
 import java.util.Date;
 /**
@@ -22,6 +23,7 @@ public class bitListenner implements signalListener{
     crc8 cr8= new crc8();
     byte checkCrC;
     int maxLen=33;
+    int tmp2,xa=1;
     byte data[]= new byte[maxLen];
     //for check
     int test[][]= new int[2][2];
@@ -49,6 +51,8 @@ public class bitListenner implements signalListener{
         if(b=='S'){
             //output="S";
             SunSpotApplication.recvLight=true;
+            SunSpotApplication.sD.tmpQ.empty();
+            SunSpotApplication.sD.q.empty();
             isStart=true;
             System.out.println("DATA:");
             System.out.print("S");
@@ -59,6 +63,7 @@ public class bitListenner implements signalListener{
             //output+='T';
             if(isStart==true){
                 try {
+
                     System.out.println("T");
                     System.out.println("Send " + countData + " Speed=" + countData * 1000.0 / (new Date().getTime() - timeB));
                     for (int i = 0; i < countData / 8; i++) {
@@ -66,6 +71,38 @@ public class bitListenner implements signalListener{
                     }
                     checkCrC = (byte) cr8.compute(data, 1, countData/8-1);
                     System.out.println("TRUE??" + checkCrC + "vs" + data[0]);
+                    //auto fix
+                    if(checkCrC!= data[0] && countData%8==0) for(int i=0;i<countData && checkCrC!= data[0];i++){
+                        System.out.println("Try with bit:"+i +" Before:"+data[i/8]);
+                        if(i%8==0) xa=1;
+                        else xa*=2;
+                        tmp2=(data[i/8]<0?256+data[i/8]:data[i/8]);
+                        tmp2<<=(7-i%8);
+                        tmp2%=256;
+                        tmp2>>=7;
+                        System.out.println(tmp2);
+                        if(tmp2!=0){
+                            data[i/8]-=xa;
+                            System.out.println("    after1:"+data[i/8]);
+                            checkCrC = (byte) cr8.compute(data, 1, countData/8-1);
+                            if(checkCrC == data[0]){
+                                countData*=-1;
+                                break;
+                            }
+                            data[i/8]+=xa;
+                        }else{
+                            data[i/8]+=xa;
+                            System.out.println("    after0:"+data[i/8]);
+                            checkCrC = (byte) cr8.compute(data, 1, countData/8-1);
+                            if(checkCrC == data[0]){
+                                countData*=-1;
+                                break;
+                            }
+                            data[i/8]-=xa;
+                        }
+                    }
+                    //
+                    
                     //check(data[1]);
                     //send hello packet to HOST
                     SunSpotApplication.HC.initSend(0, 1, SunSpotApplication.hostCode);
@@ -87,7 +124,7 @@ public class bitListenner implements signalListener{
                         }
                     } else {
                         System.out.println("Send FALSE ACK");
-                        //SunSpotApplication.sD.FALSEACK();
+                        SunSpotApplication.blinkLED(LEDColor.RED);
                     }
                     
                     //System.out.println(output);
@@ -122,7 +159,9 @@ public class bitListenner implements signalListener{
                     if(countData%8==0){
                         data[countData/8]=0;
                     }
+                    
                     data[countData/8]=(byte) (data[countData / 8] * 2 + (b == '1' ? 1 : 0));
+                    
                     countData+=1;
                 }
 
@@ -145,8 +184,8 @@ public class bitListenner implements signalListener{
                 for(i=0;i<8;i++)SunSpotApplication.randomCode[i]=data[i+6];
                 SunSpotApplication.addrN+=IEEEAddress.toLong("0014.4F01.0000.0000");
                 System.out.println("Rcv from "+ IEEEAddress.toDottedHex(SunSpotApplication.addrN));
-                for(i=0;i<8;i++) {
-                    SunSpotApplication.leds.getLED(i).setColor(LEDColor.RED);
+                for(i=3;i<5;i++) {
+                    SunSpotApplication.leds.getLED(i).setColor(LEDColor.GREEN);
                     SunSpotApplication.leds.getLED(i).setOn();
                 }
                 {//send data to NODE (loop send ultil recv OK ACK)
@@ -171,10 +210,12 @@ public class bitListenner implements signalListener{
                     //
                     SunSpotApplication.HC.send();
                 }
-                for(i=0;i<8;i++) {
+                for(i=3;i<5;i++) {
                     SunSpotApplication.leds.getLED(i).setOff();
                 }
-                SunSpotApplication.blinkLED();
+                SunSpotApplication.isPushed=true;
+                SunSpotApplication.blinkLED(LEDColor.BLUE);
+                SunSpotApplication.isPushed=false;
                 break;
             case (byte) 85:
                 System.out.println("Hello Packet\n");

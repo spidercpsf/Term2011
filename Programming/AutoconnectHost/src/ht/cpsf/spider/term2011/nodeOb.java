@@ -61,7 +61,7 @@ public class nodeOb {
         h.setColor(Color.BLACK);
         h.drawRect((int) (x * W / 100.0)+10, (int) (y * H / 100.0)+10,(int)(weight*W/100.0),(int)(height*H/100.0));
         h.drawString(ID+":", (int) (x * W / 100.0)+20, (int) (y * H / 100.0)+25);
-        h.drawString("Light:"+light+ " Temp:"+temp, (int) (x * W / 100.0)+20, (int) (y * H / 100.0)+45);
+        h.drawString("Light:"+light+ " Battery:"+temp, (int) (x * W / 100.0)+20, (int) (y * H / 100.0)+45);
         h.drawString(lastUpdate.toString(), (int) (x * W / 100.0)+20, (int) (y * H / 100.0)+65);
     }
 

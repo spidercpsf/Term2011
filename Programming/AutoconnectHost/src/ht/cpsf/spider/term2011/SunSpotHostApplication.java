@@ -39,7 +39,10 @@ public class SunSpotHostApplication {
     public static GUICreateNodeManual2 gCNM = new GUICreateNodeManual2();
     public static HostConnect HC = new HostConnect(14);
     public static  GUIFrame gF= new GUIFrame("Node Info");
-    
+
+    //for count bad connect count
+    public static int misCount=0;
+    public static int batteryConnector=0;
     /*
      * Print out our radio address.
      */
@@ -60,7 +63,8 @@ public class SunSpotHostApplication {
                 while(true){
                     try {
                         Thread.sleep(3000);
-                        if( gF.connectorTime!=null )gF.statusLB.setText("Connect time:"+(new Date().getTime()-gF.connectorTime.getTime())/1000);
+                        if( gF.connectorTime!=null )gF.statusLB.setText("Connect time:"+(new Date().getTime()-gF.connectorTime.getTime())/1000 + " bad count="+misCount + "battery="+batteryConnector);
+                        else gF.statusLB.setText("Not connect to connector, bad count="+misCount);
                         gF.update();
                     } catch (InterruptedException ex) {
                         Logger.getLogger(SunSpotHostApplication.class.getName()).log(Level.SEVERE, null, ex);
@@ -81,15 +85,16 @@ public class SunSpotHostApplication {
         NNC.start();
         sDL.start();
         //create code:
-        String[] listNode=new String[]{"6A27","4F7D","4F74","59E0"};
+        Utils.sleep(1000);
+        String[] listNode=new String[]{"6A27","4F7D","4F74","59E0","66B2","3F81","5955","66F1","72D9","687B","526D","59C0","744F","4B00","3F83","574D","7233","5A75","7456"};
         long addrTmp1;
         String addrTmp2;
         for(int j=0;j<listNode.length;j++){
             addrTmp2 = "0014.4F01.0000."+listNode[j];
             addrTmp1= IEEEAddress.toLong(addrTmp2);
             System.out.println("****");
-            System.out.println("Node Address:"+addrTmp2);
-            System.out.println("Node Code:"+calcCode(addrTmp1));
+            System.out.println("Address:"+listNode[j]);
+            System.out.println("Code:"+calcCode(addrTmp1));
             System.out.println("****");
             //gCNM.addAddr(calcCode(ourAddr+j));
             //Utils.sleep(1000);

@@ -92,6 +92,7 @@ public class bitDetect {
                         if(xLight<0.85)xLight=0.85;
                         if(xLight>1.2)xLight=1.2;
                         threshold01=-6.3+(sum/count1)/12.5;
+                        threshold01=SunSpotApplication.threshold01/10.0;
                         System.out.println("Avg="+(sum/count1)+" ->*="+xLight);
                         //send hello packet to HOST
                             SunSpotApplication.HC.initSend(0, 1, SunSpotApplication.hostCode);
@@ -100,7 +101,7 @@ public class bitDetect {
                             SunSpotApplication.HC.dos.writeDouble(threshold01);//send log
                             SunSpotApplication.HC.send2();
                         //
-                        threshold01=7;
+                        
                         preBit=0;
                         preLen=0;
                         count1=0;

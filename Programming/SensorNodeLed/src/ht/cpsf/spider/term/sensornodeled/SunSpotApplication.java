@@ -6,6 +6,8 @@
 
 package ht.cpsf.spider.term.sensornodeled;
 
+import com.sun.spot.peripheral.IBattery;
+import com.sun.spot.peripheral.Spot;
 import com.sun.spot.peripheral.radio.RadioFactory;
 import com.sun.spot.resources.Resources;
 import com.sun.spot.resources.transducers.ILightSensor;
@@ -137,6 +139,7 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
         //send light sensor demo
         HostConnect HC2= new HostConnect(15);
         ILightSensor lightS = EDemoBoard.getInstance().getLightSensor();
+        IBattery battery = Spot.getInstance().getPowerController().getBattery();
         for(int i=0;i<8;i++){
               leds.getLED(i).setRGB(0, 0, 20);
         }
@@ -154,7 +157,7 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
                     }
                     HC2.initSend(hostAddr, 12,randomCode);//after replace randomCode with true Code
                     HC2.dos.writeInt(lightS.getValue());
-                    HC2.dos.writeDouble(1412.0);
+                    HC2.dos.writeDouble(battery.getBatteryLevel());
                     HC2.send2();
                 } catch (IOException ex) {
                     ex.printStackTrace();

@@ -6,6 +6,8 @@
 
 package org.sunspotworld;
 
+import com.sun.spot.peripheral.IBattery;
+import com.sun.spot.peripheral.Spot;
 import com.sun.spot.peripheral.radio.RadioFactory;
 import com.sun.spot.resources.Resources;
 import com.sun.spot.resources.transducers.ISwitch;
@@ -50,10 +52,11 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
     public static long addrN;
     static byte randomCode[]= new byte[8];
     static byte hostCode[] = new byte[]{14,5,24,64,76,87,54,12};
-
+    static byte threshold01=7;
 
     //
     protected void startApp() throws MIDletStateChangeException {
+        IBattery battery = Spot.getInstance().getPowerController().getBattery();
         ISwitch sw1 = (ISwitch) Resources.lookup(ISwitch.class, "SW1");
         ISwitch sw2 = (ISwitch) Resources.lookup(ISwitch.class, "SW2");
         System.out.println("Node started");
@@ -77,6 +80,7 @@ public  class SunSpotApplication extends MIDlet implements defineThreshold{
                 //send hello packet to HOST
                 HC.initSend(0, 1, hostCode);
                 HC.dos.writeByte((byte)14);//send hello msg
+                HC.dos.writeInt(battery.getBatteryLevel());//send hello msg
                 hostAddr=HC.send();
                 //
                 System.out.println("Addr Host="+IEEEAddress.toDottedHex(hostAddr));

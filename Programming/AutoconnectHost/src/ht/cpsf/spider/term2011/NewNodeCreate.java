@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.microedition.io.*;
 import javax.swing.JOptionPane;
+import org.jcp.xml.dsig.internal.dom.Utils;
 /**
  *
  * @author cpsf
@@ -111,7 +112,7 @@ public class NewNodeCreate implements Runnable{
                         case (byte) 1:
                             int len=dis.readInt();
                             boolean st= dis.readBoolean();
-
+                            if(st==false) SunSpotHostApplication.misCount++;
                             if(len> 0 )System.out.println("**********************************Recv:"+len+ " Status:"+st);
                             else System.out.println("**************AUTO FIX********************Recv:"+len+ " Status:"+st);
                             break;
@@ -120,6 +121,7 @@ public class NewNodeCreate implements Runnable{
                             break;
                         case (byte)14:
                             System.out.println("Hello messenger from connector");
+                            SunSpotHostApplication.batteryConnector= dis.readInt();
                             if(!connectorAddr.equals(addr)){
                                 connectorAddr=addr;
                                 rConOut = (RadiogramConnection) Connector.open("radiogram://"+addr+":" + HOST_PORT);
@@ -130,7 +132,7 @@ public class NewNodeCreate implements Runnable{
                             System.out.println("Sendding Hellomsg to Connector..");
                             dgOut.reset();
                             dgOut.writeLong(IEEEAddress.toLong(addr));
-                            dt = SunSpotHostApplication.edc.EnCode(SunSpotHostApplication.key,new byte[]{80});
+                            dt = SunSpotHostApplication.edc.EnCode(SunSpotHostApplication.key,new byte[]{81,75});
                             dgOut.writeInt(dt.length);
                             dgOut.write(dt);
                             rConOut.send(dgOut);
@@ -180,6 +182,7 @@ public class NewNodeCreate implements Runnable{
                         case (byte) 143://ok ack for create new node with manual input
                             if(IEEEAddress.toLong(addr)==(SunSpotHostApplication.gCNM.addrN)) {
                                 SunSpotHostApplication.nM.addNode(addr,SunSpotHostApplication.gCNM.randomCode);
+                                Thread.sleep(5000);
                                 JOptionPane.showConfirmDialog(null, "Connect to "+ addr +" finish!");
                             }
 
